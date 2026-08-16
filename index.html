@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Palm Yoga Studio · Quản Lý</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Loop&display=swap" rel="stylesheet">
+<style>
+:root {
+  --palm-dk:#4B3A22; --green:#A9834A; --g-lt:#F4E9D7; --g-pl:#FAF3E9;
+  --gold:#B5924F; --gd-lt:#FBF1DC; --purple:#BE7355; --p-lt:#F7E9E1;
+  --teal:#7C8F5E; --t-lt:#EEF1E5; --amber:#C08A3E; --a-lt:#FBF1DF;
+  --red:#B85C4A; --r-lt:#FBEAE5; --bg:#F4EAE0; --white:#FFFCF6;
+  --text:#4F3E20; --muted:#8B7A63; --border:#E4D5BE;
+  --shadow:0 1px 7px rgba(75,58,34,.08); --radius:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden;font-size:14px;line-height:1.5}
+/* LOGIN */
+#login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#2E2213,#6B4E2C);display:none;align-items:center;justify-content:center;z-index:1000}
+#login-screen.show{display:flex}
+.lbox{background:var(--white);border-radius:20px;padding:40px 34px 34px;width:620px;box-shadow:0 24px 64px rgba(0,0,0,.3);text-align:center}
+.l-logo{line-height:1;margin-bottom:10px}
+.brand-mark{color:var(--gold)}
+.l-title{font-family:'Zen Loop',cursive;font-size:72px;font-weight:400;letter-spacing:.5px;color:#4F3E20;white-space:nowrap;line-height:1.1;margin-bottom:6px}
+.l-sub{font-size:10px;letter-spacing:1.8px;color:#665738;text-transform:uppercase;margin:3px 0 22px;font-weight:700}
+.l-form{text-align:left}
+.l-lbl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;color:var(--muted)}
+.l-sel,.l-pin{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;color:var(--text);background:var(--bg);outline:none;transition:.14s;margin-bottom:12px}
+.l-pin{text-align:center;letter-spacing:8px;font-size:22px}
+.l-sel:focus,.l-pin:focus{border-color:var(--green);background:#fff}
+.l-hint{display:none;background:var(--g-lt);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--muted);margin-bottom:10px}
+.l-hint.show{display:block}
+.l-err{color:var(--red);font-size:12px;margin-bottom:7px;min-height:16px;text-align:center}
+.l-btn{width:100%;padding:12px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:.14s}
+.l-btn:hover{background:#8A6836}
+/* SIDEBAR */
+.sidebar{width:260px;background:#EFE1D0;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.s-brand{padding:18px 18px 14px;border-bottom:1px solid rgba(79,62,32,.12)}
+.s-ico{font-size:22px;line-height:1}
+.s-ico img{width:34px;height:34px;display:block;margin:0 auto}
+.s-brand h1{color:#4F3E20;font-size:25px;font-weight:400;margin-top:5px;font-family:'Zen Loop',cursive;letter-spacing:.2px;white-space:nowrap;text-align:center}
+.s-brand p{color:#665738;font-size:9px;letter-spacing:1.4px;text-transform:uppercase;font-weight:600;margin-top:2px;text-align:center}
+.s-nav{padding:10px 0;flex:1}
+.n-item{display:flex;align-items:center;gap:9px;padding:9px 18px;cursor:pointer;color:#806B4D;font-size:13px;font-weight:500;border-left:3px solid transparent;transition:.13s;user-select:none}
+.n-item:hover{background:rgba(184,156,114,.15);color:#4F3E20}
+.n-item.active{background:rgba(184,156,114,.22);color:#4F3E20;border-left-color:var(--gold);font-weight:700}
+.n-ico{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.s-foot{padding:10px 18px;border-top:1px solid rgba(79,62,32,.1);color:#9A8A6D;font-size:10px}
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--white);padding:10px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px}
+.topbar h2{font-size:16px;font-weight:700;white-space:nowrap}
+.tb-r{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.sel-sm{padding:5px 7px;border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--text);background:var(--white);outline:none;cursor:pointer}
+.sel-sm:focus{border-color:var(--green)}
+.u-badge{background:var(--g-lt);color:var(--green);padding:4px 9px;border-radius:100px;font-size:11px;font-weight:700;white-space:nowrap}
+.content{flex:1;overflow-y:auto;padding:20px 22px}
+.panel{display:none}
+.panel.active{display:block}
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:11px}
+/* STATS */
+.stat{background:var(--white);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+.s-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.s-val{font-size:24px;font-weight:800;line-height:1.1;margin-top:4px;color:var(--green)}
+.s-sub{font-size:11px;color:var(--muted);margin-top:2px}
+/* CARDS */
+.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.c-head{padding:11px 15px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.c-ttl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.c-body{padding:13px 15px}
+/* CALENDAR */
+.cal-nav{display:flex;align-items:center;gap:8px;margin-bottom:13px}
+.cal-nav h3{font-size:16px;font-weight:700;min-width:170px}
+.ico-btn{background:var(--white);border:1px solid var(--border);border-radius:7px;width:31px;height:31px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:.13s;flex-shrink:0}
+.ico-btn:hover{background:var(--g-lt);border-color:var(--green)}
+.cal-grid{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.c-dow{display:grid;grid-template-columns:repeat(7,1fr);background:var(--palm-dk)}
+.c-dow div{padding:7px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:.4px}
+.cal-body{display:grid;grid-template-columns:repeat(7,1fr)}
+.c-cell{min-height:86px;padding:5px 4px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.c-cell:nth-child(7n){border-right:none}
+.c-cell.dim{background:#F8F1E6}
+.c-cell.td{background:var(--g-pl)}
+.d-num{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:2px}
+.td-circle{background:var(--green);color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px}
+.chip{display:block;border-radius:3px;padding:2px 5px;font-size:9px;font-weight:600;margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:2px solid transparent;transition:opacity .1s}
+.chip:hover{opacity:.75}
+.chip.extra{border-style:dashed}
+.chip.cancelled{opacity:.4;text-decoration:line-through}
+.legend-wrap{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.leg-item{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:100px;font-size:10px;font-weight:700}
+.b-ok{background:var(--g-lt);color:#2A6B35}
+.b-warn{background:var(--a-lt);color:#8A5A20}
+.b-red{background:var(--r-lt);color:var(--red)}
+.b-bu{background:var(--p-lt);color:var(--purple)}
+.b-dim{background:#EFE7DA;color:#9C8A73}
+.b-gold{background:var(--gd-lt);color:var(--gold)}
+.b-pause{background:var(--a-lt);color:var(--amber)}
+.b-stop{background:var(--r-lt);color:var(--red)}
+.b-debt{background:#F5D3D3;color:#8B2020}
+.b-pay-ok{background:var(--g-lt);color:#2A6B35}
+.b-pay-wait{background:var(--a-lt);color:#8A5A20}
+.b-cancel{background:#EDEDED;color:#777}
+/* SUB-NAV */
+.vnav{display:flex;gap:3px;background:var(--bg);border-radius:7px;padding:3px;margin-bottom:13px}
+.vn-item{padding:6px 12px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);transition:.13s}
+.vn-item.active{background:var(--white);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+/* ATT MATRIX */
+.att-mx{overflow-x:auto;border-radius:var(--radius)}
+.att-mx table{white-space:nowrap;border-collapse:collapse;min-width:100%}
+.att-mx th{padding:7px 5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);border-bottom:2px solid var(--border);text-align:center}
+.att-mx td{padding:6px 4px;border-bottom:1px solid var(--border);text-align:center}
+.att-mx tr:hover td{background:var(--g-pl)}
+.s-col{position:sticky;left:0;z-index:2}
+.att-mx th.s-col{background:#F1E7D8;text-align:left;padding:7px 10px}
+.att-mx td.s-col{background:var(--white);text-align:left;padding:6px 10px}
+.att-mx tr:hover td.s-col{background:var(--g-pl)}
+.mx-cc{cursor:pointer}
+.mx-cc:hover{background:var(--g-lt) !important}
+.bu-chip{background:var(--p-lt);color:var(--purple);font-size:9px;font-weight:700;padding:2px 5px;border-radius:3px;line-height:1.4;display:inline-block;text-align:center}
+/* TABLE */
+table.tbl{width:100%;border-collapse:collapse}
+table.tbl th{text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);padding:8px 11px;border-bottom:2px solid var(--border)}
+table.tbl td{padding:10px 11px;border-bottom:1px solid var(--border);font-size:13px}
+table.tbl tr:last-child td{border-bottom:none}
+table.tbl tr:hover td{background:var(--g-pl)}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:.13s;line-height:1}
+.btn-p{background:var(--green);color:#fff}
+.btn-p:hover{background:#8A6836}
+.btn-g{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-g:hover{background:var(--bg)}
+.btn-r{background:var(--r-lt);color:var(--red);border:1px solid #ECC8C8}
+.btn-r:hover{background:#F2D6CE}
+.btn-lnk{background:none;border:none;color:var(--green);font-size:12px;font-weight:700;cursor:pointer;padding:0}
+.btn-sm{padding:4px 9px;font-size:11px}
+/* MODALS */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:100;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--white);border-radius:14px;width:520px;max-height:84vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.2)}
+.modal.wide{width:630px}
+.m-hd{padding:15px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--white);z-index:1}
+.m-hd h3{font-size:15px;font-weight:700}
+.x-btn{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
+.m-bd{padding:16px 20px}
+.m-ft{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:var(--white)}
+/* FORMS */
+.fg{margin-bottom:12px}
+.fg:last-child{margin-bottom:0}
+.fl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;color:var(--muted)}
+.fi,.fs{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;color:var(--text);background:var(--white);outline:none;transition:border-color .13s}
+.fi:focus,.fs:focus{border-color:var(--green)}
+/* PROGRESS */
+.progress{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.pbar{height:100%;background:var(--green);border-radius:3px}
+.pbar.red{background:var(--red)}
+/* AVATAR */
+.avi{border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0}
+/* STUDENT ROW */
+.s-row{display:flex;align-items:center;padding:10px 15px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;gap:10px}
+.s-row:hover{background:var(--g-pl)}
+.s-row:last-child{border-bottom:none}
+/* ATT BUTTONS */
+.a-btn{padding:4px 8px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--white);transition:.1s;color:var(--muted)}
+.a-ok{background:var(--g-lt);border-color:var(--green);color:#2A6B35}
+.a-abs{background:var(--r-lt);border-color:var(--red);color:var(--red)}
+.a-bu{background:var(--p-lt);border-color:var(--purple);color:var(--purple)}
+.bu-note{background:var(--p-lt);border:1px solid #D8C8F0;border-radius:7px;padding:9px 11px;margin-top:5px}
+.guest-row{background:var(--p-lt);border-radius:7px;padding:6px 8px;margin-bottom:4px;border:1px dashed #D8C8F0}
+.sal-btn{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--white);transition:.13s}
+.sal-paid{background:var(--g-lt);border-color:var(--green);color:#2A6B35}
+.sal-unpaid{background:var(--r-lt);border-color:var(--red);color:var(--red)}
+.sch-row{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.day-chk{display:flex;align-items:center;gap:3px;font-size:11px;font-weight:600;border:1px solid var(--border);border-radius:5px;padding:4px 7px;cursor:pointer;color:var(--muted)}
+.day-chk input{margin:0}
+/* STATUS BUTTONS */
+.st-btn{padding:7px 11px;border-radius:7px;border:1px solid var(--border);background:var(--white);cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);transition:.13s}
+.st-a.on-a{border-color:var(--green);background:var(--g-lt);color:var(--green)}
+.st-p.on-p{border-color:var(--amber);background:var(--a-lt);color:var(--amber)}
+.st-s.on-s{border-color:var(--red);background:var(--r-lt);color:var(--red)}
+/* BARS */
+.bar-row{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.bar-lbl{width:58px;font-size:12px;font-weight:700}
+.bar-track{flex:1;height:6px;background:var(--border);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px}
+.bar-val{width:24px;text-align:right;font-size:11px;font-weight:700}
+/* TEACHER CARD */
+.t-card{background:var(--white);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.t-big{font-size:26px;font-weight:800;margin-top:4px}
+/* PKG CARD */
+.pkg{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px;margin-bottom:8px}
+.amount{font-size:17px;font-weight:800;color:var(--green)}
+/* CLASS BLOCK */
+.c-block{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+.cb-hd{display:flex;align-items:center;gap:11px;padding:12px 15px;border-bottom:1px solid var(--border)}
+.c-stripe{width:4px;height:34px;border-radius:2px;flex-shrink:0}
+/* ATT HISTORY */
+.ah-row{display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px;gap:7px}
+.ah-row:last-child{border-bottom:none}
+/* CANCEL ZONE */
+.cz{background:var(--r-lt);border:1px solid #ECC8C8;border-radius:8px;padding:12px;margin-top:13px;display:none}
+.cz.show{display:block}
+/* SETTINGS */
+.pin-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.pin-row span{font-size:13px;font-weight:600;width:110px;flex-shrink:0}
+/* UTILS */
+.a-warn{background:var(--a-lt);border:1px solid #F0CFA0;border-radius:7px;padding:9px 12px;font-size:12px;display:flex;align-items:flex-start;gap:6px;margin-bottom:7px}
+.sep{height:1px;background:var(--border);margin:12px 0}
+.mt1{margin-top:4px}.mt2{margin-top:8px}.mt3{margin-top:12px}.mt4{margin-top:18px}
+.mb2{margin-bottom:8px}.mb3{margin-bottom:12px}
+.fx{display:flex}.ic{align-items:center}.jb{justify-content:space-between}
+.g2r{gap:8px}.g3r{gap:12px}.fw{width:100%}
+.fb{font-weight:700}.fs6{font-weight:600}
+.tsm{font-size:12px}.txs{font-size:10px}.tmu{color:var(--muted)}.tgr{color:var(--green)}
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sec-hd h3{font-size:14px;font-weight:700}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="lbox">
+    <div class="l-logo"><img src="data:image/png;base64,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" alt="Palm Yoga Studio logo" style="width:150px;height:auto;display:block;margin:0 auto"></div>
+    <div class="l-title">Palm Yoga Studio</div>
+    <div class="l-sub">Body · Breath · Mind · Balance</div>
+    <div class="l-form">
+      <label class="l-lbl">Tài khoản</label>
+      <select class="l-sel" id="l-user" onchange="onUser()">
+        <option value="">— Chọn tài khoản —</option>
+        <option value="admin">🔐 Quản trị viên</option>
+      </select>
+      <div class="l-hint" id="l-hint"></div>
+      <div id="l-pw" style="display:none">
+        <label class="l-lbl">Mã PIN</label>
+        <input type="password" class="l-pin" id="l-pin" maxlength="6" onkeydown="if(event.key==='Enter')doLogin()" placeholder="• • • •">
+      </div>
+      <div class="l-err" id="l-err"></div>
+      <button class="l-btn" onclick="doLogin()">Đăng nhập →</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+<aside class="sidebar">
+  <div class="s-brand"><div class="s-ico"><img src="data:image/png;base64,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" alt="Palm Yoga Studio logo"></div><h1 id="s-name">Palm Yoga Studio</h1><p>Body · Breath · Mind · Balance</p></div>
+  <nav class="s-nav">
+    <div class="n-item active" data-tab="overview"><span class="n-ico">🏠</span>Tổng Quan</div>
+    <div class="n-item" data-tab="calendar"><span class="n-ico">📅</span>Lịch Tập</div>
+    <div class="n-item" data-tab="classes"><span class="n-ico">🧘</span>Ca Tập</div>
+    <div class="n-item" data-tab="teachers"><span class="n-ico">👩‍🏫</span>Giáo Viên</div>
+    <div class="n-item" data-tab="students"><span class="n-ico">👥</span>Học Viên</div>
+    <div class="n-item" data-tab="income"><span class="n-ico">💰</span>Học Phí</div>
+    <div class="n-item" data-tab="expenses"><span class="n-ico">🧾</span>Chi Phí</div>
+    <div class="n-item" data-tab="settings"><span class="n-ico">⚙️</span>Cài Đặt</div>
+  </nav>
+  <div class="s-foot">Nhà Bè · HCM</div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <h2 id="pg-ttl">Tổng Quan</h2>
+    <div class="tb-r">
+      <select class="sel-sm" id="mo-sel" onchange="upMo()"></select>
+      <select class="sel-sm" id="yr-sel" onchange="upMo()"></select>
+      <span class="u-badge" id="u-badge"></span>
+      <button class="btn btn-g btn-sm" onclick="logout()">Đăng xuất</button>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div id="panel-overview" class="panel active">
+      <div class="g5 mb3" id="ov-stats"></div>
+      <div class="g2 mt3">
+        <div class="card"><div class="c-head"><span class="c-ttl">Buổi dạy theo GV tháng này</span></div><div class="c-body" id="ov-bars"></div></div>
+        <div class="card"><div class="c-head"><span class="c-ttl">⚠️ Sắp hết gói</span></div><div class="c-body" id="ov-alerts"></div></div>
+      </div>
+      <div class="card mt4"><div class="c-head"><span class="c-ttl">Lịch tháng nhanh</span></div><div class="c-body" id="ov-mini"></div></div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div id="panel-calendar" class="panel">
+      <div class="cal-nav">
+        <button class="ico-btn" onclick="stepMo(-1)">‹</button>
+        <h3 id="cal-lbl"></h3>
+        <button class="ico-btn" onclick="stepMo(1)">›</button>
+        <button class="btn btn-p btn-sm" style="margin-left:auto" id="btn-add-sess" onclick="openAddSess()">+ Thêm buổi</button>
+      </div>
+      <div class="cal-grid">
+        <div class="c-dow"><div>T2</div><div>T3</div><div>T4</div><div>T5</div><div>T6</div><div>T7</div><div>CN</div></div>
+        <div class="cal-body" id="cal-body"></div>
+      </div>
+      <div class="legend-wrap" id="cal-legend"></div>
+    </div>
+
+    <!-- CLASSES -->
+    <div id="panel-classes" class="panel">
+      <div class="sec-hd">
+        <div class="vnav" id="cls-vnav">
+          <div class="vn-item" onclick="setCV('summary')">📊 Tóm tắt</div>
+          <div class="vn-item active" onclick="setCV('matrix')">📋 Điểm danh tháng</div>
+        </div>
+        <button class="btn btn-p btn-sm" id="btn-add-ct" onclick="openAddCt()">+ Thêm ca tập</button>
+      </div>
+      <div id="cls-list"></div>
+    </div>
+
+    <!-- TEACHERS -->
+    <div id="panel-teachers" class="panel">
+      <div class="g2" id="tc-grid"></div>
+      <div class="card mt4"><div class="c-head"><span class="c-ttl" id="tc-tbl-ttl">Tất cả buổi học</span></div><div id="tc-tbl"></div></div>
+    </div>
+
+    <!-- STUDENTS -->
+    <div id="panel-students" class="panel">
+      <div class="sec-hd">
+        <input class="fi" id="stu-srch" style="max-width:240px" placeholder="🔍 Tìm học viên..." oninput="renderStudents()">
+        <button class="btn btn-p" onclick="openAddStu()">+ Thêm học viên</button>
+      </div>
+      <div class="vnav" id="stu-vnav">
+        <div class="vn-item active" onclick="setSF('active')">🟢 Đang học</div>
+        <div class="vn-item" onclick="setSF('paused')">🟡 Tạm nghỉ</div>
+        <div class="vn-item" onclick="setSF('stopped')">🔴 Đã nghỉ</div>
+      </div>
+      <div class="card"><div id="stu-list"></div></div>
+    </div>
+
+    <!-- INCOME -->
+    <div id="panel-income" class="panel">
+      <div class="g3 mb3" id="inc-stats"></div>
+      <div class="sec-hd mt4"><h3>Danh sách gói học phí</h3><button class="btn btn-p" onclick="openAddPkg(null)">+ Thêm gói</button></div>
+      <div id="pkg-list"></div>
+    </div>
+
+    <!-- EXPENSES -->
+    <div id="panel-expenses" class="panel">
+      <div class="g3 mb3" id="exp-stats"></div>
+      <div class="card mb4">
+        <div class="c-head"><span class="c-ttl">👩‍🏫 Lương giáo viên tháng này (tự động tính)</span></div>
+        <div class="c-body" id="exp-salary"></div>
+      </div>
+      <div class="sec-hd"><h3>Chi phí khác (mua sắm, bảo trì, đầu tư...)</h3><button class="btn btn-p" onclick="openAddExp()">+ Thêm chi phí</button></div>
+      <div id="exp-list"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="panel-settings" class="panel">
+      <div class="g2 mb3">
+        <div class="card">
+          <div class="c-head"><span class="c-ttl">Thông tin Studio</span></div>
+          <div class="c-body">
+            <div class="fg"><label class="fl">Tên Studio</label><input type="text" class="fi" id="set-sname"></div>
+            <button class="btn btn-p btn-sm" onclick="saveStName()">Lưu tên</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="c-head"><span class="c-ttl">🔐 Đổi PIN Admin</span></div>
+          <div class="c-body" id="pin-body"></div>
+        </div>
+      </div>
+      <div class="card mt3">
+        <div class="c-head">
+          <span class="c-ttl">👩‍🏫 Quản lý Giáo Viên</span>
+          <button class="btn btn-p btn-sm" onclick="openAddTc()">+ Thêm GV</button>
+        </div>
+        <div id="tc-mgmt"></div>
+      </div>
+      <div class="card mt4">
+        <div class="c-head"><span class="c-ttl">💡 Hướng dẫn đánh dấu Học Bù</span></div>
+        <div class="c-body" style="line-height:1.8;font-size:13px">
+          <strong>1.</strong> Mở buổi học mà học viên <em>đến bù</em> (ở bất kỳ ca nào, kể cả ca họ không đăng ký)<br>
+          <strong>2.</strong> Ở mục "Học viên học bù (từ ca khác)", chọn tên học viên trong danh sách và bấm <strong>+ Thêm học bù</strong><br>
+          <strong>3.</strong> Học viên sẽ hiện với nhãn <span class="badge b-bu">🔄 Học bù</span>, mặc định điểm danh "Có mặt"<br>
+          <strong>4.</strong> Lưu điểm danh — buổi này sẽ tự trừ vào gói tập của chính học viên đó như bình thường.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- SESSION MODAL -->
+<div class="overlay" id="mo-sess">
+  <div class="modal"><div class="m-hd"><h3 id="ms-ttl">Chi Tiết Buổi Học</h3><button class="x-btn" onclick="closeM('mo-sess')">×</button></div><div class="m-bd" id="ms-bd"></div><div class="m-ft" id="ms-ft"></div></div>
+</div>
+<!-- STUDENT MODAL -->
+<div class="overlay" id="mo-stu">
+  <div class="modal wide"><div class="m-hd"><h3 id="mstu-ttl">Hồ Sơ Học Viên</h3><button class="x-btn" onclick="closeM('mo-stu')">×</button></div><div class="m-bd" id="mstu-bd"></div><div class="m-ft"><button class="btn btn-g" onclick="closeM('mo-stu')">Đóng</button></div></div>
+</div>
+<!-- ADD SESSION -->
+<div class="overlay" id="mo-as">
+  <div class="modal"><div class="m-hd"><h3>Thêm Buổi Học</h3><button class="x-btn" onclick="closeM('mo-as')">×</button></div>
+  <div class="m-bd">
+    <div class="fg"><label class="fl">Ca tập</label><select class="fs" id="ns-cls"></select></div>
+    <div class="g2"><div class="fg"><label class="fl">Ngày</label><input type="date" class="fi" id="ns-dt"></div><div class="fg"><label class="fl">Giờ</label><input type="time" class="fi" id="ns-tm"></div></div>
+    <div class="fg"><label class="fl">Giáo viên</label><select class="fs" id="ns-tc"></select></div>
+    <div class="fg"><label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px"><input type="checkbox" id="ns-ex" checked><span>Buổi thêm (ngoài lịch cố định)</span></label></div>
+  </div>
+  <div class="m-ft"><button class="btn btn-g" onclick="closeM('mo-as')">Hủy</button><button class="btn btn-p" onclick="saveNewSess()">Thêm</button></div>
+  </div>
+</div>
+<!-- ADD STUDENT -->
+<div class="overlay" id="mo-stu2">
+  <div class="modal"><div class="m-hd"><h3>Thêm Học Viên</h3><button class="x-btn" onclick="closeM('mo-stu2')">×</button></div>
+  <div class="m-bd">
+    <div class="fg"><label class="fl">Họ và tên</label><input type="text" class="fi" id="ast-nm"></div>
+    <div class="fg"><label class="fl">Số điện thoại</label><input type="text" class="fi" id="ast-ph"></div>
+    <div class="fg"><label class="fl">Ca đăng ký</label><div id="ast-cls"></div></div>
+  </div>
+  <div class="m-ft"><button class="btn btn-g" onclick="closeM('mo-stu2')">Hủy</button><button class="btn btn-p" onclick="saveNewStu()">Thêm</button></div>
+  </div>
+</div>
+<!-- ADD PACKAGE -->
+<div class="overlay" id="mo-pk">
+  <div class="modal wide"><div class="m-hd"><h3 id="pk-ttl">Thêm Gói Học Phí</h3><button class="x-btn" onclick="closeM('mo-pk')">×</button></div>
+  <div class="m-bd">
+    <div class="fg"><label class="fl">Học viên</label><select class="fs" id="pk-stu"></select></div>
+    <div class="g2">
+      <div class="fg"><label class="fl">Loại gói</label><select class="fs" id="pk-tp" onchange="togPk()"><option value="sessions">Gói theo buổi</option><option value="monthly">Gói theo tháng</option></select></div>
+      <div class="fg"><label class="fl">Trạng thái đóng phí</label><select class="fs" id="pk-pay"><option value="paid">✅ Đã đóng phí</option><option value="processing">🟡 Đang xử lý</option></select></div>
+    </div>
+    <div id="pk-sw" class="fg"><label class="fl">Số buổi</label><input type="number" class="fi" id="pk-sess" value="10" min="1"></div>
+    <div id="pk-mw" class="fg" style="display:none"><label class="fl">Số tháng</label><input type="number" class="fi" id="pk-mon" value="1" min="1" onchange="pkAutoEnd()"></div>
+    <div class="g2">
+      <div class="fg"><label class="fl">Ngày bắt đầu</label><input type="date" class="fi" id="pk-st" onchange="pkAutoEnd()"></div>
+      <div class="fg"><label class="fl">Ngày hết hạn gói (bắt buộc)</label><input type="date" class="fi" id="pk-end"></div>
+    </div>
+    <div class="g2"><div class="fg"><label class="fl">Ngày đóng tiền</label><input type="date" class="fi" id="pk-pd"></div><div class="fg"><label class="fl">Học phí (VNĐ)</label><input type="text" inputmode="numeric" class="fi" id="pk-amt" placeholder="VD: 1.200.000" oninput="fmtMoneyInput(this)"></div></div>
+    <div class="fg"><label class="fl">Ghi chú</label><input type="text" class="fi" id="pk-nt"></div>
+    <div class="sep"></div>
+    <div class="fg">
+      <label class="fl">Tần suất tập / tuần</label>
+      <div class="fx g2r">
+        <button type="button" class="st-btn st-a" id="pk-f2" onclick="setPkFreq(2)">2 buổi/tuần</button>
+        <button type="button" class="st-btn st-a" id="pk-f3" onclick="setPkFreq(3)">3 buổi/tuần</button>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">Chọn cụ thể (ca tập + thứ)</label><div id="pk-sched"></div>
+      <div class="txs tmu mt1">Chọn ca tập và thứ tương ứng đã được thiết lập sẵn trong hệ thống. Ví dụ: 3 buổi/tuần = 2 buổi ca 5h Thứ 2-4 + 1 buổi ca 19:30 Thứ 5.</div>
+    </div>
+  </div>
+  <div class="m-ft"><button class="btn btn-g" onclick="closeM('mo-pk')">Hủy</button><button class="btn btn-p" onclick="savePkg()">Lưu gói</button></div>
+  </div>
+</div>
+
+<!-- ADD CLASS TYPE (CA TẬP) -->
+<div class="overlay" id="mo-nct">
+  <div class="modal"><div class="m-hd"><h3>Thêm Ca Tập</h3><button class="x-btn" onclick="closeM('mo-nct')">×</button></div>
+  <div class="m-bd">
+    <div class="fg"><label class="fl">Tên ca tập</label><input type="text" class="fi" id="nct-nm" placeholder="VD: Yoga Buổi Sáng"></div>
+    <div class="g2">
+      <div class="fg"><label class="fl">Giờ tập</label><input type="time" class="fi" id="nct-tm" value="07:00"></div>
+      <div class="fg"><label class="fl">Giáo viên</label><select class="fs" id="nct-tc"></select></div>
+    </div>
+    <div class="fg"><label class="fl">Các thứ trong tuần (cố định, tự lặp theo năm)</label>
+      <div class="fx g2r" id="nct-days" style="flex-wrap:wrap"></div>
+    </div>
+    <div class="g2">
+      <div class="fg"><label class="fl">Thời lượng 1 buổi (giờ)</label><input type="number" class="fi" id="nct-dur" value="1.5" min="0.5" step="0.5"></div>
+      <div class="fg"><label class="fl">Lương GV (đồng/giờ)</label><input type="text" inputmode="numeric" class="fi" id="nct-rate" placeholder="VD: 150.000" oninput="fmtMoneyInput(this)"></div>
+    </div>
+    <div class="fg">
+      <label class="fl">Màu đại diện</label>
+      <div class="fx g2r" id="nct-swatches" style="flex-wrap:wrap"></div>
+      <input type="hidden" id="nct-col" value="#A9834A">
+    </div>
+  </div>
+  <div class="m-ft"><button class="btn btn-g" onclick="closeM('mo-nct')">Hủy</button><button class="btn btn-p" onclick="saveNewCt()">Thêm ca tập</button></div>
+  </div>
+</div>
+
+<!-- EDIT CLASS TYPE (CA TẬP) -->
+<div class="overlay" id="mo-ecte">
+  <div class="modal"><div class="m-hd"><h3>Sửa Ca Tập</h3><button class="x-btn" onclick="closeM('mo-ecte')">×</button></div>
+  <div class="m-bd">
+    <div class="fg"><label class="fl">Tên ca tập</label><input type="text" class="fi" id="ect-nm"></div>
+    <div class="g2">
+      <div class="fg"><label class="fl">Giờ tập</label><input type="time" class="fi" id="ect-tm"></div>
+      <div class="fg"><label class="fl">Giáo viên</label><select class="fs" id="ect-tc"></select></div>
+    </div>
+    <div class="g2">
+      <div class="fg"><label class="fl">Thời lượng 1 buổi (giờ)</label><input type="number" class="fi" id="ect-dur" min="0.5" step="0.5"></div>
+      <div class="fg"><label class="fl">Lương GV (đồng/giờ)</label><input type="text" inputmode="numeric" class="fi" id="ect-rate" oninput="fmtMoneyInput(this)"></div>
+    </div>
+    <div class="a-warn txs">💡 Lương/giờ áp dụng để tính lương GV hàng tháng trong mục "Chi Phí". Đổi số này sẽ tính lại cho mọi buổi (kể cả buổi cũ) theo mức mới nhất.</div>
+  </div>
+  <div class="m-ft"><button class="btn btn-g" onclick="closeM('mo-ecte')">Hủy</button><button class="btn btn-p" onclick="saveEditCt()">Lưu thay đổi</button></div>
+  </div>
+</div>
+
+<!-- EDIT PACKAGE -->
+<div class="overlay" id="mo-pke">
+  <div class="modal"><div class="m-hd"><h3>Chỉnh Sửa Gói Phí</h3><button class="x-btn" onclick="closeM('mo-pke')">×</button></div>
+  <div class="m-bd">
+    <div class="a-warn">📝 Dùng khi học viên xin bảo lưu, đổi ngày hết hạn, hoặc cập nhật số buổi / trạng thái đóng phí.</div>
+    <div id="pke-type-row" class="tsm tmu mb2"></div>
+    <div class="g2" id="pke-sw"><div class="fg"><label class="fl">Tổng số buổi</label><input type="number" class="fi" id="pke-sess" min="1"></div><div class="fg"><label class="fl">&nbsp;</label></div></div>
+    <div class="g2">
+      <div class="fg"><label class="fl">Ngày bắt đầu</label><input type="date" class="fi" id="pke-st"></div>
+      <div class="fg"><label class="fl">Ngày hết hạn (bảo lưu → đổi tại đây)</label><input type="date" class="fi" id="pke-end"></div>
+    </div>
+    <div class="g2">
+      <div class="fg"><label class="fl">Trạng thái đóng phí</label><select class="fs" id="pke-pay"><option value="paid">✅ Đã đóng phí</option><option value="processing">🟡 Đang xử lý</option></select></div>
+      <div class="fg"><label class="fl">Học phí (VNĐ)</label><input type="text" inputmode="numeric" class="fi" id="pke-amt" placeholder="VD: 1.200.000" oninput="fmtMoneyInput(this)"></div>
+    </div>
+    <div class="fg"><label class="fl">Ghi chú</label><input type="text" class="fi" id="pke-nt"></div>
+  </div>
+  <div class="m-ft"><button class="btn btn-g" onclick="closeM('mo-pke')">Hủy</button><button class="btn btn-p" onclick="saveEditPkg()">Lưu thay đổi</button></div>
+  </div>
+</div>
+
+<!-- ADD/EDIT EXPENSE -->
+<div class="overlay" id="mo-exp">
+  <div class="modal"><div class="m-hd"><h3 id="exp-ttl">Thêm Chi Phí</h3><button class="x-btn" onclick="closeM('mo-exp')">×</button></div>
+  <div class="m-bd">
+    <div class="fg"><label class="fl">Tên khoản chi</label><input type="text" class="fi" id="exp-nm" placeholder="VD: Mua thảm tập, sửa máy lạnh..."></div>
+    <div class="g2">
+      <div class="fg"><label class="fl">Ngày chi</label><input type="date" class="fi" id="exp-dt"></div>
+      <div class="fg"><label class="fl">Số tiền (VNĐ)</label><input type="text" inputmode="numeric" class="fi" id="exp-amt" placeholder="VD: 2.000.000" oninput="fmtMoneyInput(this)"></div>
+    </div>
+    <div class="fg"><label class="fl">Danh mục</label><select class="fs" id="exp-cat">
+      <option value="Mua sắm dụng cụ">🛒 Mua sắm dụng cụ</option>
+      <option value="Bảo trì - Sửa chữa">🔧 Bảo trì - Sửa chữa</option>
+      <option value="Đầu tư - Nâng cấp">🏗️ Đầu tư - Nâng cấp</option>
+      <option value="Marketing">📣 Marketing</option>
+      <option value="Tiện ích (điện, nước...)">💡 Tiện ích (điện, nước...)</option>
+      <option value="Thuê mặt bằng">🏠 Thuê mặt bằng</option>
+      <option value="Khác">📌 Khác</option>
+    </select></div>
+    <div class="fg"><label class="fl">Ghi chú</label><input type="text" class="fi" id="exp-nt"></div>
+  </div>
+  <div class="m-ft"><button class="btn btn-g" onclick="closeM('mo-exp')">Hủy</button><button class="btn btn-p" onclick="saveExp()">Lưu chi phí</button></div>
+  </div>
+</div>
+
+<script>
+const DEFAULT={
+  settings:{adminPin:atob('MTIzNA=='),studioName:'Palm Yoga Studio'},
+  teachers:[
+    {id:1,name:'Linh',color:'#A9834A',pin:'1111'},
+    {id:2,name:'Hoa', color:'#BE7355',pin:'2222'},
+    {id:3,name:'Minh',color:'#7C8F5E',pin:'3333'}
+  ],
+  classTypes:[
+    {id:1,name:'Yoga Cơ Bản',    days:[1,3,5],time:'07:00',teacherId:1,color:'#A9834A',studentIds:[1,2,4,7],durationHours:1.5,hourlyRate:150000},
+    {id:2,name:'Yoga Nâng Cao',  days:[2,4],  time:'18:00',teacherId:2,color:'#BE7355',studentIds:[3,4,6],durationHours:1.5,hourlyRate:180000},
+    {id:3,name:'Thiền & Hơi Thở',days:[6],   time:'09:00',teacherId:3,color:'#7C8F5E',studentIds:[1,5],durationHours:1,hourlyRate:200000}
+  ],
+  students:[
+    {id:1,name:'Nguyễn Thị Mai',phone:'0901234567',classTypeIds:[1,3],status:'active', statusNote:'',returnDate:''},
+    {id:2,name:'Trần Văn Hùng', phone:'0902345678',classTypeIds:[1],  status:'active', statusNote:'',returnDate:''},
+    {id:3,name:'Lê Thị Lan',    phone:'0903456789',classTypeIds:[2],  status:'paused', statusNote:'Đi du lịch nước ngoài',returnDate:'2026-08-01'},
+    {id:4,name:'Phạm Thu Hà',   phone:'0904567890',classTypeIds:[1,2],status:'active', statusNote:'',returnDate:''},
+    {id:5,name:'Võ Minh Tuấn',  phone:'0905678901',classTypeIds:[3],  status:'active', statusNote:'',returnDate:''},
+    {id:6,name:'Đặng Thị Hồng', phone:'0906789012',classTypeIds:[2],  status:'active', statusNote:'',returnDate:''},
+    {id:7,name:'Bùi Văn Nam',   phone:'0907890123',classTypeIds:[1],  status:'stopped',statusNote:'Bận việc gia đình',returnDate:''}
+  ],
+  packages:[
+    {id:1,studentId:1,type:'sessions',total:20,months:null,start:'2026-06-01',end:'2026-09-01', paid:'2026-06-01',amount:2000000,payStatus:'paid',notes:'',exts:[],schedule:[{ctId:1,day:1},{ctId:1,day:3},{ctId:3,day:6}]},
+    {id:2,studentId:2,type:'sessions',total:10,months:null,start:'2026-07-01',end:'2026-08-15', paid:'2026-07-01',amount:1200000,payStatus:'paid',notes:'',exts:[],schedule:[{ctId:1,day:1},{ctId:1,day:3}]},
+    {id:3,studentId:3,type:'monthly', total:null,months:1,  start:'2026-07-01',end:'2026-07-31',paid:'2026-07-01',amount:1500000,payStatus:'paid',notes:'',exts:[],schedule:[{ctId:2,day:2},{ctId:2,day:4}]},
+    {id:4,studentId:4,type:'sessions',total:10,months:null,start:'2026-07-05',end:'2026-08-20', paid:'2026-07-05',amount:1200000,payStatus:'processing',notes:'',exts:[],schedule:[{ctId:1,day:1},{ctId:2,day:2}]},
+    {id:5,studentId:5,type:'monthly', total:null,months:1,  start:'2026-07-01',end:'2026-07-31',paid:'2026-07-01',amount:1000000,payStatus:'paid',notes:'',exts:[],schedule:[{ctId:3,day:6}]},
+    {id:6,studentId:6,type:'sessions',total:10,months:null,start:'2026-06-20',end:'2026-07-09', paid:'2026-06-20',amount:1500000,payStatus:'paid',notes:'',exts:[],schedule:[{ctId:2,day:2},{ctId:2,day:4}]},
+    {id:7,studentId:7,type:'monthly', total:null,months:3,  start:'2026-06-01',end:'2026-08-31',paid:'2026-06-01',amount:3000000,payStatus:'paid',notes:'',exts:[],schedule:[{ctId:1,day:1}]},
+    {id:8,studentId:1,type:'sessions',total:20,months:null,start:'2026-03-01',end:'2026-06-01', paid:'2026-03-01',amount:1800000,payStatus:'paid',notes:'Gói đăng ký lần đầu',exts:[],schedule:[{ctId:1,day:1},{ctId:1,day:3}]}
+  ],
+  salaryPay:[],
+  expenses:[
+    {id:1,date:'2026-07-03',title:'Mua 10 thảm tập yoga mới',amount:3500000,category:'Mua sắm dụng cụ',notes:''},
+    {id:2,date:'2026-07-08',title:'Sửa máy lạnh phòng tập',amount:1200000,category:'Bảo trì - Sửa chữa',notes:''},
+    {id:3,date:'2026-07-10',title:'Chạy quảng cáo Facebook',amount:800000,category:'Marketing',notes:'Chiến dịch tháng 7'}
+  ],
+  genMonths:[],
+  nextCtId:4,
+  sessions:[
+    {id:'s1', ctId:1,date:'2026-07-01',time:'07:00',teacherId:1,extra:false,cancelled:false,cancelNote:'',att:[{sid:1,st:'present',mfor:null},{sid:2,st:'present',mfor:null},{sid:4,st:'present',mfor:null},{sid:7,st:'present',mfor:null}]},
+    {id:'s2', ctId:1,date:'2026-07-03',time:'07:00',teacherId:1,extra:false,cancelled:false,cancelNote:'',att:[{sid:1,st:'present',mfor:null},{sid:2,st:'present',mfor:null},{sid:4,st:'absent',mfor:null},{sid:7,st:'present',mfor:null}]},
+    {id:'s3', ctId:1,date:'2026-07-06',time:'07:00',teacherId:1,extra:false,cancelled:false,cancelNote:'',att:[{sid:1,st:'present',mfor:null},{sid:2,st:'absent',mfor:null},{sid:4,st:'makeup',mfor:'2026-07-03'},{sid:7,st:'present',mfor:null}]},
+    {id:'s4', ctId:1,date:'2026-07-08',time:'07:00',teacherId:1,extra:false,cancelled:false,cancelNote:'',att:[{sid:1,st:'present',mfor:null},{sid:2,st:'present',mfor:null},{sid:4,st:'present',mfor:null},{sid:7,st:'absent',mfor:null}]},
+    {id:'s5', ctId:1,date:'2026-07-10',time:'07:00',teacherId:1,extra:false,cancelled:false,cancelNote:'',att:[{sid:1,st:'present',mfor:null},{sid:2,st:'present',mfor:null},{sid:4,st:'present',mfor:null},{sid:7,st:'present',mfor:null}]},
+    {id:'s6', ctId:2,date:'2026-07-02',time:'18:00',teacherId:2,extra:false,cancelled:false,cancelNote:'',att:[{sid:3,st:'present',mfor:null},{sid:4,st:'present',mfor:null},{sid:6,st:'absent',mfor:null}]},
+    {id:'s7', ctId:2,date:'2026-07-07',time:'18:00',teacherId:2,extra:false,cancelled:false,cancelNote:'',att:[{sid:3,st:'present',mfor:null},{sid:4,st:'present',mfor:null},{sid:6,st:'present',mfor:null}]},
+    {id:'s8', ctId:2,date:'2026-07-09',time:'18:00',teacherId:2,extra:false,cancelled:false,cancelNote:'',att:[{sid:3,st:'present',mfor:null},{sid:4,st:'absent',mfor:null},{sid:6,st:'makeup',mfor:'2026-07-02'}]},
+    {id:'s9', ctId:3,date:'2026-07-04',time:'09:00',teacherId:3,extra:false,cancelled:false,cancelNote:'',att:[{sid:1,st:'present',mfor:null},{sid:5,st:'present',mfor:null}]},
+    {id:'s10',ctId:3,date:'2026-07-11',time:'09:00',teacherId:3,extra:false,cancelled:false,cancelNote:'',att:[{sid:1,st:'present',mfor:null},{sid:5,st:'present',mfor:null}]},
+    {id:'s11',ctId:1,date:'2026-07-13',time:'07:00',teacherId:1,extra:false,cancelled:false,cancelNote:'',att:[]},
+    {id:'s12',ctId:2,date:'2026-07-14',time:'18:00',teacherId:2,extra:false,cancelled:false,cancelNote:'',att:[]},
+    {id:'s13',ctId:1,date:'2026-07-15',time:'07:00',teacherId:1,extra:false,cancelled:false,cancelNote:'',att:[]},
+    {id:'s14',ctId:2,date:'2026-07-16',time:'18:00',teacherId:2,extra:false,cancelled:false,cancelNote:'',att:[]},
+    {id:'s15',ctId:1,date:'2026-07-17',time:'07:00',teacherId:1,extra:false,cancelled:false,cancelNote:'',att:[]},
+    {id:'s16',ctId:3,date:'2026-07-18',time:'09:00',teacherId:3,extra:false,cancelled:false,cancelNote:'',att:[]},
+    {id:'s17',ctId:1,date:'2026-07-20',time:'07:00',teacherId:1,extra:false,cancelled:false,cancelNote:'',att:[]},
+    {id:'s18',ctId:2,date:'2026-07-21',time:'18:00',teacherId:2,extra:false,cancelled:false,cancelNote:'',att:[]},
+    {id:'s19',ctId:1,date:'2026-07-22',time:'07:00',teacherId:1,extra:false,cancelled:false,cancelNote:'',att:[]},
+    {id:'s20',ctId:2,date:'2026-07-23',time:'18:00',teacherId:2,extra:false,cancelled:false,cancelNote:'',att:[]},
+    {id:'s21',ctId:1,date:'2026-07-24',time:'07:00',teacherId:1,extra:false,cancelled:false,cancelNote:'',att:[]},
+    {id:'s22',ctId:3,date:'2026-07-25',time:'09:00',teacherId:3,extra:false,cancelled:false,cancelNote:'',att:[]},
+    {id:'s23',ctId:1,date:'2026-07-27',time:'07:00',teacherId:1,extra:false,cancelled:false,cancelNote:'',att:[]},
+    {id:'s24',ctId:2,date:'2026-07-28',time:'18:00',teacherId:2,extra:false,cancelled:false,cancelNote:'',att:[]},
+    {id:'s25',ctId:1,date:'2026-07-29',time:'07:00',teacherId:1,extra:false,cancelled:false,cancelNote:'',att:[]},
+    {id:'s26',ctId:2,date:'2026-07-30',time:'18:00',teacherId:2,extra:false,cancelled:false,cancelNote:'',att:[]},
+    {id:'s27',ctId:1,date:'2026-07-31',time:'07:00',teacherId:1,extra:false,cancelled:false,cancelNote:'',att:[]}
+  ]
+};
+
+let D,viewMonth=new Date(2026,6,1),currentTab='overview';
+let editSessId=null,tempAtt={},classView='matrix',stuFilter='active';
+let editStuId=null,pendingStuSt=null;
+const TODAY='2026-07-11',todayD=new Date(2026,6,11);
+const VI_MO=['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+const AUTH_KEY='ygs_auth_v2',DATA_KEY='ygs_v3';
+
+function loadD(){
+  try{const s=localStorage.getItem(DATA_KEY);if(s){D=JSON.parse(s);migrateD();return;}}catch{}
+  D=JSON.parse(JSON.stringify(DEFAULT));saveD();
+}
+// Đảm bảo dữ liệu cũ (đã lưu trước khi nâng cấp) có đủ trường mới
+function migrateD(){
+  let ch=false;
+  if(!D.salaryPay){D.salaryPay=[];ch=true;}
+  if(!D.genMonths){D.genMonths=[];ch=true;}
+  if(!D.expenses){D.expenses=[];ch=true;}
+  if(!D.nextCtId){D.nextCtId=Math.max(...D.classTypes.map(c=>c.id),0)+1;ch=true;}
+  if(D.settings&&D.settings.studioName==='Palm Yoga'){D.settings.studioName='Palm Yoga Studio';ch=true;}
+  D.classTypes.forEach(ct=>{
+    if(ct.durationHours===undefined){ct.durationHours=1.5;ch=true;}
+    if(ct.hourlyRate===undefined){ct.hourlyRate=150000;ch=true;}
+  });
+  D.packages.forEach(p=>{
+    if(p.payStatus===undefined){p.payStatus='paid';ch=true;}
+    if(p.schedule===undefined){p.schedule=[];ch=true;}
+    if(p.type==='sessions'&&!p.end){const sd=new Date(p.start);p.end=dStr(new Date(sd.getFullYear(),sd.getMonth()+3,sd.getDate()));ch=true;}
+  });
+  if(ch)saveD();
+}
+function saveD(){localStorage.setItem(DATA_KEY,JSON.stringify(D));}
+
+const GT=id=>D.teachers.find(t=>t.id===id);
+const GC=id=>D.classTypes.find(c=>c.id===id);
+const GS=id=>D.students.find(s=>s.id===id);
+const GSE=id=>D.sessions.find(s=>s.id===id);
+
+function fd(ds){if(!ds)return'';const[y,m,d]=ds.split('-');return`${d}/${m}/${y}`;}
+function fv(n){return n?n.toLocaleString('vi-VN')+'đ':'—';}
+// Tự chấm phân cách hàng nghìn khi nhập học phí (giữ vị trí con trỏ hợp lý)
+function fmtMoneyInput(el){
+  const digits=el.value.replace(/\D/g,'');
+  el.value=digits?Number(digits).toLocaleString('vi-VN'):'';
+}
+function rawMoney(id){const el=document.getElementById(id);return el?parseInt(el.value.replace(/\D/g,''))||0:0;}
+function dStr(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function ini(name){return name.trim().split(' ').slice(-2).map(p=>p[0]).join('').toUpperCase();}
+function dl(ds){if(!ds)return null;const[y,m,d]=ds.split('-').map(Number);return Math.ceil((new Date(y,m-1,d)-todayD)/86400000);}
+function dow(ds){const[y,m,d]=ds.split('-').map(Number);return['CN','T2','T3','T4','T5','T6','T7'][new Date(y,m-1,d).getDay()];}
+function moSess(mo,yr){ensureMonthSessions(mo,yr);const p=`${yr}-${String(mo+1).padStart(2,'0')}-`;return D.sessions.filter(s=>s.date.startsWith(p));}
+function actPkg(sid){const p=D.packages.filter(x=>x.studentId===sid);return p.length?p.sort((a,b)=>b.start.localeCompare(a.start))[0]:null;}
+// Package covering a given date for a student (falls back to most recent package)
+function pkgForDate(sid,date){
+  const ps=D.packages.filter(p=>p.studentId===sid&&p.start<=date&&(!p.end||date<=p.end));
+  if(ps.length)return ps.sort((a,b)=>b.start.localeCompare(a.start))[0];
+  return actPkg(sid);
+}
+// Số buổi đã dùng của 1 gói = đếm mọi buổi (kể cả học bù ở ca khác) trong khoảng ngày của gói mà học viên có mặt/bù
+function pkgUsed(pkg){
+  if(!pkg)return 0;
+  let cnt=0;
+  D.sessions.forEach(s=>{
+    if(s.cancelled)return;
+    if(s.date<pkg.start)return;
+    if(pkg.end&&s.date>pkg.end)return;
+    const a=s.att.find(x=>x.sid===pkg.studentId);
+    if(a&&(a.st==='present'||a.st==='makeup'))cnt++;
+  });
+  return cnt;
+}
+function pkgSt(pkg){
+  if(!pkg)return{lbl:'Chưa có gói',cls:'b-dim',urg:true,debt:false};
+  const d=dl(pkg.end);
+  const expired=d!==null&&d<0;
+  if(expired)return{lbl:'🔴 Nợ phí (hết hạn)',cls:'b-debt',urg:true,debt:true};
+  if(pkg.type==='sessions'){
+    const used=pkgUsed(pkg),r=pkg.total-used;
+    if(r<=0)return{lbl:'Đã hết buổi',cls:'b-red',urg:true,debt:false};
+    if(r<=2)return{lbl:`Còn ${r} buổi`,cls:'b-warn',urg:true,debt:false};
+    return{lbl:`Còn ${r}/${pkg.total} buổi`,cls:'b-ok',urg:false,debt:false};
+  }
+  if(d===null)return{lbl:'Gói tháng',cls:'b-ok',urg:false,debt:false};
+  if(d<=7)return{lbl:`Hết hạn ${d} ngày nữa`,cls:'b-warn',urg:true,debt:false};
+  return{lbl:`Hết hạn ${fd(pkg.end)}`,cls:'b-ok',urg:false,debt:false};
+}
+function tcCnt(tid,mo,yr){return moSess(mo,yr).filter(s=>s.teacherId===tid&&!s.cancelled&&s.att&&s.att.length>0).length;}
+function tcCntByClass(tid,mo,yr){
+  const ms=moSess(mo,yr).filter(s=>s.teacherId===tid&&!s.cancelled&&s.att&&s.att.length>0);
+  const byCt={};ms.forEach(s=>{byCt[s.ctId]=(byCt[s.ctId]||0)+1;});
+  return byCt;
+}
+// Số tiền 1 buổi của 1 ca tập = lương/giờ × số giờ/buổi
+function ctSessionAmount(ct){return Math.round((ct?.hourlyRate||0)*(ct?.durationHours||1));}
+// Lương 1 GV trong tháng = Σ (số buổi ĐÃ điểm danh mỗi ca × tiền/buổi của ca đó)
+function teacherSalaryDetail(tid,mo,yr){
+  const byCt=tcCntByClass(tid,mo,yr);let total=0;
+  const rows=Object.keys(byCt).map(ctId=>{
+    const ct=GC(parseInt(ctId));if(!ct)return null;
+    const count=byCt[ctId],perSession=ctSessionAmount(ct),amount=perSession*count;
+    total+=amount;
+    return{ct,count,perSession,amount};
+  }).filter(Boolean);
+  return{rows,total};
+}
+function allTeacherSalaryTotal(mo,yr){return D.teachers.reduce((s,t)=>s+teacherSalaryDetail(t.id,mo,yr).total,0)+guestSalaryTotal(mo,yr);}
+// Lương GV thuê ngoài (không có tài khoản trong hệ thống) — gộp theo tên đã nhập tay ở từng buổi
+// Lương GV thuê ngoài (không có tài khoản trong hệ thống) — gộp theo tên đã nhập tay ở từng buổi
+// Mỗi buổi thuê ngoài có thể có mức lương riêng (guestAmount), không nhất thiết theo giá gốc của ca
+function guestSalaryDetail(mo,yr){
+  const ms=moSess(mo,yr).filter(s=>!s.cancelled&&s.att&&s.att.length>0&&s.guestTeacher);
+  const groups={};
+  ms.forEach(s=>{
+    const ct=GC(s.ctId);if(!ct)return;
+    const amt=s.guestAmount!=null?s.guestAmount:ctSessionAmount(ct);
+    if(!groups[s.guestTeacher])groups[s.guestTeacher]={rows:{},total:0};
+    const g=groups[s.guestTeacher];
+    if(!g.rows[s.ctId])g.rows[s.ctId]={ct,count:0,amount:0};
+    g.rows[s.ctId].count++;g.rows[s.ctId].amount+=amt;
+    g.total+=amt;
+  });
+  Object.values(groups).forEach(g=>{g.rows=Object.values(g.rows);});
+  return groups;
+}
+function guestSalaryTotal(mo,yr){return Object.values(guestSalaryDetail(mo,yr)).reduce((s,g)=>s+g.total,0);}
+// Tự động sinh buổi tập định kỳ theo thứ cho 1 tháng (chỉ sinh nếu chưa có), giúp lịch "tự nhảy" theo năm
+function ensureMonthSessions(mo,yr){
+  const key=`${yr}-${mo}`;
+  if(!D.genMonths)D.genMonths=[];
+  if(D.genMonths.includes(key))return;
+  const dm=new Date(yr,mo+1,0).getDate();
+  const existKeys=new Set(D.sessions.filter(s=>s.date.startsWith(`${yr}-${String(mo+1).padStart(2,'0')}-`)).map(s=>s.ctId+'|'+s.date));
+  let changed=false;
+  for(let d=1;d<=dm;d++){
+    const dt=new Date(yr,mo,d),ds=dStr(dt),wd=dt.getDay();
+    D.classTypes.forEach(ct=>{
+      if(!ct.days.includes(wd))return;
+      const k=ct.id+'|'+ds;
+      if(existKeys.has(k))return;
+      D.sessions.push({id:'g'+ct.id+'_'+ds,ctId:ct.id,date:ds,time:ct.time,teacherId:ct.teacherId,extra:false,cancelled:false,cancelNote:'',att:[]});
+      existKeys.add(k);changed=true;
+    });
+  }
+  D.genMonths.push(key);
+  saveD();
+}
+// Khi thêm 1 ca tập mới, sinh bổ sung các buổi cho những tháng đã từng được sinh trước đó
+function genForNewClassType(ct){
+  (D.genMonths||[]).forEach(key=>{
+    const[yr,mo]=key.split('-').map(Number);
+    const dm=new Date(yr,mo+1,0).getDate();
+    for(let d=1;d<=dm;d++){
+      const dt=new Date(yr,mo,d),ds=dStr(dt),wd=dt.getDay();
+      if(!ct.days.includes(wd))continue;
+      const exists=D.sessions.some(s=>s.ctId===ct.id&&s.date===ds);
+      if(!exists)D.sessions.push({id:'g'+ct.id+'_'+ds,ctId:ct.id,date:ds,time:ct.time,teacherId:ct.teacherId,extra:false,cancelled:false,cancelNote:'',att:[]});
+    }
+  });
+  saveD();
+}
+// Trạng thái thanh toán lương GV theo tháng
+function salSt(tid,mo,yr){const m=`${yr}-${String(mo+1).padStart(2,'0')}`;return(D.salaryPay||[]).find(x=>x.teacherId===tid&&x.month===m)?.status||'unpaid';}
+function setSalSt(tid,mo,yr,status){
+  const m=`${yr}-${String(mo+1).padStart(2,'0')}`;
+  if(!D.salaryPay)D.salaryPay=[];
+  let e=D.salaryPay.find(x=>x.teacherId===tid&&x.month===m);
+  if(e)e.status=status;else D.salaryPay.push({teacherId:tid,month:m,status});
+  saveD();
+}
+const AVC=['#A9834A','#BE7355','#7C8F5E','#C08A3E','#B85C4A','#8B5E3C'];
+function avi(name,sz=34,fs=13){const i=name.charCodeAt(0)%AVC.length;return`<div class="avi" style="width:${sz}px;height:${sz}px;font-size:${fs}px;background:${AVC[i]}">${ini(name)}</div>`;}
+
+// AUTH
+function getAuth(){try{return JSON.parse(localStorage.getItem(AUTH_KEY));}catch{return null;}}
+function setAuth(a){localStorage.setItem(AUTH_KEY,JSON.stringify(a));}
+function clearAuth(){localStorage.removeItem(AUTH_KEY);}
+function isAdmin(){return getAuth()?.type==='admin';}
+function isTc(){return getAuth()?.type==='teacher';}
+function curTid(){return getAuth()?.teacherId;}
+function canEdit(s){return isAdmin()||(isTc()&&s.teacherId===curTid());}
+
+function initApp(){
+  loadD();
+  buildLoginDD();
+  const a=getAuth();if(a)showApp();else showLogin();
+}
+function buildLoginDD(){
+  let o='<option value="">— Chọn tài khoản —</option><option value="admin">🔐 Quản trị viên</option>';
+  D.teachers.forEach(t=>{o+=`<option value="${t.id}">🌿 ${t.name}</option>`;});
+  document.getElementById('l-user').innerHTML=o;
+}
+function onUser(){
+  const v=document.getElementById('l-user').value;
+  document.getElementById('l-pin').value='';document.getElementById('l-err').textContent='';
+  const hw=document.getElementById('l-pw'),hh=document.getElementById('l-hint');
+  if(!v){hw.style.display='none';hh.className='l-hint';return;}
+  hw.style.display='block';document.getElementById('l-pin').focus();
+  hh.className='l-hint';
+}
+function doLogin(){
+  const v=document.getElementById('l-user').value,pin=document.getElementById('l-pin').value;
+  const err=document.getElementById('l-err');
+  if(!v){err.textContent='Vui lòng chọn tài khoản.';return;}
+  if(!pin){err.textContent='Vui lòng nhập mã PIN.';return;}
+  if(v==='admin'){if(pin!==(D.settings?.adminPin||atob('MTIzNA=='))){err.textContent='PIN không đúng.';document.getElementById('l-pin').value='';return;}setAuth({type:'admin',teacherId:null});}
+  else{const t=GT(parseInt(v));if(!t||pin!==t.pin){err.textContent='PIN không đúng.';document.getElementById('l-pin').value='';return;}setAuth({type:'teacher',teacherId:t.id});}
+  showApp();
+}
+function logout(){clearAuth();currentTab='overview';showLogin();}
+function showLogin(){
+  document.getElementById('login-screen').className='show';
+  document.getElementById('app').style.display='none';
+  document.getElementById('l-user').value='';
+  document.getElementById('l-pw').style.display='none';
+  document.getElementById('l-pin').value='';
+  document.getElementById('l-err').textContent='';
+  document.getElementById('l-hint').className='l-hint';
+  buildLoginDD();
+}
+function showApp(){
+  document.getElementById('login-screen').className='';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('s-name').textContent=D.settings?.studioName||'Palm Yoga Studio';
+  setupNav();buildPicker();syncPicker();updateBadge();
+  switchTab(isTc()?'classes':'overview');
+}
+function setupNav(){
+  document.querySelectorAll('.n-item').forEach(n=>{const t=n.dataset.tab;n.style.display=isTc()&&!['calendar','classes'].includes(t)?'none':'';});
+  document.getElementById('btn-add-sess').style.display=isAdmin()?'':'none';
+}
+function updateBadge(){const a=getAuth();document.getElementById('u-badge').textContent=a?.type==='admin'?'🔐 Admin':`🌿 ${GT(a?.teacherId)?.name||'GV'}`;}
+
+// MONTH PICKER
+function buildPicker(){
+  document.getElementById('mo-sel').innerHTML=VI_MO.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+  document.getElementById('yr-sel').innerHTML=[2025,2026,2027].map(y=>`<option value="${y}">${y}</option>`).join('');
+}
+function syncPicker(){document.getElementById('mo-sel').value=viewMonth.getMonth();document.getElementById('yr-sel').value=viewMonth.getFullYear();}
+function upMo(){viewMonth=new Date(parseInt(document.getElementById('yr-sel').value),parseInt(document.getElementById('mo-sel').value),1);renderTab(currentTab);}
+function stepMo(d){viewMonth=new Date(viewMonth.getFullYear(),viewMonth.getMonth()+d,1);syncPicker();renderCal();}
+
+// NAV
+const TITLES={overview:'Tổng Quan',calendar:'Lịch Tập',classes:'Ca Tập',teachers:'Giáo Viên',students:'Học Viên',income:'Học Phí',expenses:'Chi Phí',settings:'Cài Đặt'};
+document.querySelectorAll('.n-item').forEach(el=>el.addEventListener('click',()=>switchTab(el.dataset.tab)));
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.n-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(`panel-${tab}`)?.classList.add('active');
+  document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active');
+  document.getElementById('pg-ttl').textContent=isTc()&&tab==='classes'?'Ca Của Tôi':TITLES[tab];
+  renderTab(tab);
+}
+function renderTab(t){
+  if(t==='overview')rOv();else if(t==='calendar')renderCal();else if(t==='classes')renderCls();
+  else if(t==='teachers')rTc();else if(t==='students')renderStudents();
+  else if(t==='income')rInc();else if(t==='expenses')rExp();else if(t==='settings')rSet();
+}
+
+// OVERVIEW
+function rOv(){
+  const mo=viewMonth.getMonth(),yr=viewMonth.getFullYear();
+  const ms=moSess(mo,yr),past=ms.filter(s=>s.date<=TODAY&&!s.cancelled);
+  const pfx=`${yr}-${String(mo+1).padStart(2,'0')}`;
+  const mInc=D.packages.filter(p=>p.paid?.startsWith(pfx)).reduce((s,p)=>s+(p.amount||0),0);
+  const mOtherExp=D.expenses.filter(e=>e.date.startsWith(pfx)).reduce((s,e)=>s+(e.amount||0),0);
+  const mExp=allTeacherSalaryTotal(mo,yr)+mOtherExp;
+  document.getElementById('ov-stats').innerHTML=`
+    <div class="stat"><div class="s-lbl">Buổi học tháng này</div><div class="s-val">${ms.filter(s=>!s.cancelled).length}</div><div class="s-sub">${past.length} đã dạy</div></div>
+    <div class="stat"><div class="s-lbl">Học viên đang học</div><div class="s-val">${D.students.filter(s=>s.status==='active').length}</div><div class="s-sub">${D.classTypes.length} ca</div></div>
+    <div class="stat"><div class="s-lbl">Thu tháng này</div><div class="s-val" style="font-size:16px;color:var(--green)">${fv(mInc)}</div></div>
+    <div class="stat"><div class="s-lbl">Chi tháng này</div><div class="s-val" style="font-size:16px;color:var(--red)">${fv(mExp)}</div><div class="s-sub">Lương GV + chi phí khác</div></div>
+    <div class="stat"><div class="s-lbl">Giáo viên</div><div class="s-val">${D.teachers.length}</div></div>`;
+  const mx=Math.max(...D.teachers.map(t=>tcCnt(t.id,mo,yr)),1);
+  document.getElementById('ov-bars').innerHTML=D.teachers.map(t=>{const c=tcCnt(t.id,mo,yr);return`<div class="bar-row"><div class="bar-lbl" style="color:${t.color}">${t.name}</div><div class="bar-track"><div class="bar-fill" style="width:${(c/mx*100).toFixed(0)}%;background:${t.color}"></div></div><div class="bar-val" style="color:${t.color}">${c}</div></div>`;}).join('');
+  const urg=D.students.filter(s=>s.status==='active'&&pkgSt(actPkg(s.id)).urg);
+  document.getElementById('ov-alerts').innerHTML=urg.length?urg.map(s=>{const st=pkgSt(actPkg(s.id));return`<div class="a-warn">⚠️<div><strong>${s.name}</strong> — ${st.lbl} <button class="btn-lnk" onclick="openAddPkg(${s.id})">Gia hạn</button></div></div>`;}).join(''):'<p class="tmu tsm">Không có ai cần gia hạn 🎉</p>';
+  const bd={};ms.forEach(s=>{if(!bd[s.date])bd[s.date]=[];bd[s.date].push(s);});
+  const f=new Date(yr,mo,1),sd=(f.getDay()+6)%7,dm=new Date(yr,mo+1,0).getDate();
+  let h=`<div class="tsm fb tmu mb2">${VI_MO[mo]} ${yr}</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center">${['T2','T3','T4','T5','T6','T7','CN'].map(d=>`<div class="txs tmu fb" style="padding:3px">${d}</div>`).join('')}`;
+  for(let i=0;i<sd;i++)h+='<div></div>';
+  for(let d=1;d<=dm;d++){const ds=`${yr}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const sess=bd[ds]||[],it=ds===TODAY;h+=`<div style="padding:3px;border-radius:4px;${it?'background:var(--g-lt)':''}"><div style="font-size:11px;font-weight:${it?700:400};color:${it?'var(--green)':'var(--text)'}">${d}</div>${sess.map(s=>`<div style="width:5px;height:5px;border-radius:50%;background:${GC(s.ctId)?.color||'#ccc'};margin:1px auto;${s.cancelled?'opacity:.3':''}"></div>`).join('')}</div>`;}
+  document.getElementById('ov-mini').innerHTML=h+'</div>';
+}
+
+// CALENDAR
+function renderCal(){
+  const mo=viewMonth.getMonth(),yr=viewMonth.getFullYear();
+  document.getElementById('cal-lbl').textContent=`${VI_MO[mo]} ${yr}`;
+  const bd={};let sess=moSess(mo,yr);
+  if(isTc())sess=sess.filter(s=>s.teacherId===curTid());
+  sess.forEach(s=>{if(!bd[s.date])bd[s.date]=[];bd[s.date].push(s);});
+  const f=new Date(yr,mo,1),sd=(f.getDay()+6)%7,dm=new Date(yr,mo+1,0).getDate(),pd=new Date(yr,mo,0).getDate();
+  let cells='';
+  for(let i=sd-1;i>=0;i--)cells+=`<div class="c-cell dim"><div class="d-num">${pd-i}</div></div>`;
+  for(let d=1;d<=dm;d++){
+    const ds=`${yr}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,it=ds===TODAY;
+    const sc=(bd[ds]||[]).sort((a,b)=>a.time.localeCompare(b.time));
+    const dn=it?`<div class="d-num"><span class="td-circle">${d}</span></div>`:`<div class="d-num">${d}</div>`;
+    cells+=`<div class="c-cell${it?' td':''}">${dn}${sc.map(s=>{const ct=GC(s.ctId);return`<span class="chip${s.extra?' extra':''}${s.cancelled?' cancelled':''}" style="background:${ct?.color}18;color:${ct?.color};border-left-color:${ct?.color}" onclick="openSess('${s.id}')">${s.time} ${ct?.name}${s.extra?'★':''}${s.cancelled?' ❌':''}</span>`;}).join('')}</div>`;
+  }
+  const tot=Math.ceil((sd+dm)/7)*7;
+  for(let d=1;d<=tot-sd-dm;d++)cells+=`<div class="c-cell dim"><div class="d-num">${d}</div></div>`;
+  document.getElementById('cal-body').innerHTML=cells;
+  document.getElementById('cal-legend').innerHTML=D.classTypes.map(ct=>{const t=GT(ct.teacherId);return`<div class="leg-item"><div class="dot" style="background:${ct.color}"></div><span style="color:${ct.color}">${ct.name}</span><span class="tmu tsm">(${t?.name})</span></div>`;}).join('');
+}
+
+// SESSION MODAL
+function openSess(sid){
+  const s=GSE(sid);if(!s)return;
+  editSessId=sid;const ct=GC(s.ctId);
+  document.getElementById('ms-ttl').textContent=`${ct?.name} — ${fd(s.date)}`;
+  tempAtt={};s.att.forEach(a=>{tempAtt[a.sid]={st:a.st,mfor:a.mfor,guest:!!a.guest};});
+  const en=ct?.studentIds||[],to=D.teachers.map(t=>`<option value="${t.id}" ${!s.guestTeacher&&t.id===s.teacherId?'selected':''}>${t.name}</option>`).join('')+`<option value="guest" ${s.guestTeacher?'selected':''}>🔗 GV thuê ngoài (nhập tên)</option>`,ce=canEdit(s);
+  let bd=`<div class="fx ic g2r mb3" style="flex-wrap:wrap"><div><div class="txs tmu">Ngày</div><strong>${fd(s.date)}</strong></div><div><div class="txs tmu">Giờ</div><strong>${s.time}</strong></div><div>${s.extra?'<span class="badge b-gold">★ Buổi thêm</span>':'<span class="badge b-ok">Lịch cố định</span>'}${s.cancelled?'<span class="badge b-red" style="margin-left:4px">❌ Đã huỷ</span>':''}</div></div>`;
+  if(s.cancelled){bd+=`<div class="a-warn">❌ Đã huỷ${s.cancelNote?': '+s.cancelNote:''}</div>`;}
+  else{
+    if(ce)bd+=`<div class="fg"><label class="fl">Giáo viên buổi này</label><select class="fs" id="sess-tc" style="max-width:220px" onchange="togGuestTc()">${to}</select><input type="text" class="fi mt2" id="sess-guest-nm" placeholder="Nhập tên GV thuê ngoài..." style="display:${s.guestTeacher?'':'none'};max-width:220px" value="${s.guestTeacher||''}"><div id="sess-guest-amt-wrap" style="display:${s.guestTeacher?'':'none'};margin-top:6px"><label class="fl">Lương buổi này (VNĐ) — có thể khác giá gốc của ca</label><input type="text" inputmode="numeric" class="fi" id="sess-guest-amt" placeholder="VD: 250.000" oninput="fmtMoneyInput(this)" style="max-width:220px" value="${s.guestAmount?s.guestAmount.toLocaleString('vi-VN'):''}"></div></div>`;
+    else{const nm=s.guestTeacher||GT(s.teacherId)?.name||'—',col=s.guestTeacher?'var(--muted)':(GT(s.teacherId)?.color||'#999');bd+=`<div class="mb2 tsm">GV: <span class="badge" style="background:${col}18;color:${col}">${nm}${s.guestTeacher?' · thuê ngoài':''}</span></div>`;}
+    bd+=`<div class="sep"></div><div class="txs fb tmu" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px">Điểm danh (học viên đăng ký ca này)</div>`;
+    bd+=`<div id="att-rows">${renderRosterRows(en,ce)}</div>`;
+    bd+=`<div class="sep"></div><div class="txs fb tmu" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px">🔄 Học viên học bù (từ ca khác)</div>`;
+    bd+=`<div id="guest-rows">${renderGuestRows(en,ce)}</div>`;
+    if(ce)bd+=`<div class="fx g2r ic mt2" style="flex-wrap:wrap"><select class="fs" id="guest-pick" style="max-width:220px;flex:1"></select><button class="btn btn-g btn-sm" onclick="addGuestAtt()">+ Thêm học bù</button></div>`;
+    if(isAdmin())bd+=`<div class="cz" id="cz"><div class="fs6 mb2" style="color:var(--red)">🚫 Huỷ buổi học này</div><div class="fg"><label class="fl">Lý do huỷ</label><input type="text" class="fi" id="cz-note" placeholder="Giáo viên bị ốm..."></div><label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer;margin-bottom:10px"><input type="checkbox" id="cz-comp" checked><span>Tự động <strong>+1 buổi</strong> vào thẻ học viên đăng ký ca này (không áp dụng cho học viên học bù)</span></label><button class="btn btn-r btn-sm" onclick="doCancel()">✓ Xác nhận Huỷ</button></div>`;
+  }
+  document.getElementById('ms-bd').innerHTML=bd;
+  if(ce&&!s.cancelled)refreshGuestPicker(en);
+  let ft=`<button class="btn btn-g" onclick="closeM('mo-sess')">Đóng</button>`;
+  if(!s.cancelled){if(ce)ft+=`<button class="btn btn-p" onclick="saveAtt()">Lưu điểm danh</button>`;if(isAdmin())ft+=`<button class="btn btn-r btn-sm" onclick="togCZ()">🚫 Huỷ buổi</button>`;}
+  document.getElementById('ms-ft').innerHTML=ft;
+  openM('mo-sess');
+}
+function renderRosterRows(en,ce){
+  if(!en.length)return'<p class="tmu tsm">Chưa có học viên đăng ký ca này.</p>';
+  return en.map(id=>{const st=GS(id);if(!st)return'';return attRowH(id,st.name,tempAtt[id]||{st:null,mfor:null},ce,false);}).join('');
+}
+function renderGuestRows(en,ce){
+  const gids=Object.keys(tempAtt).map(Number).filter(id=>!en.includes(id));
+  if(!gids.length)return'<p class="tmu tsm">Chưa có học viên học bù trong buổi này.</p>';
+  return gids.map(id=>{const st=GS(id);if(!st)return'';return attRowH(id,st.name,tempAtt[id],ce,true);}).join('');
+}
+function refreshGuestPicker(en){
+  const gp=document.getElementById('guest-pick');if(!gp)return;
+  const avail=D.students.filter(st=>!en.includes(st.id)&&!tempAtt[st.id]);
+  gp.innerHTML=avail.length?avail.map(st=>`<option value="${st.id}">${st.name}</option>`).join(''):'<option value="">— Không còn học viên —</option>';
+  const btn=gp.nextElementSibling;if(btn)btn.disabled=!avail.length;
+}
+function refreshAttUI(){
+  const s=GSE(editSessId);if(!s)return;const ct=GC(s.ctId),en=ct?.studentIds||[],ce=canEdit(s);
+  const rr=document.getElementById('att-rows');if(rr)rr.innerHTML=renderRosterRows(en,ce);
+  const gr=document.getElementById('guest-rows');if(gr)gr.innerHTML=renderGuestRows(en,ce);
+  refreshGuestPicker(en);
+}
+function addGuestAtt(){
+  const sel=document.getElementById('guest-pick');if(!sel||!sel.value)return;
+  tempAtt[parseInt(sel.value)]={st:'present',mfor:null,guest:true};
+  refreshAttUI();
+}
+function removeGuestAtt(sid){delete tempAtt[sid];refreshAttUI();}
+function attRowH(sid,name,att,ed,guest){
+  const ok=att.st==='present',ab=att.st==='absent',bu=att.st==='makeup';
+  const guestTag=guest?'<span class="badge b-bu" style="margin-left:4px">🔄 Học bù</span>':'';
+  let btns='';
+  if(ed){
+    const opts=[['present','✓ Có','a-ok'],['absent','✗ Vắng','a-abs']];
+    btns=`<div class="fx g2r">${opts.map(([v,l,c])=>`<button class="a-btn${att.st===v?' '+c:''}" onclick="setA(${sid},'${v}')">${l}</button>`).join('')}${guest?`<button class="a-btn" style="color:var(--red);border-color:#ECC8C8" onclick="removeGuestAtt(${sid})" title="Bỏ khỏi buổi">✕</button>`:''}</div>`;
+  }else{
+    let b='<span class="badge b-dim">Chưa điểm danh</span>';
+    if(ok)b='<span class="badge b-ok">✓ Có mặt</span>';else if(ab)b='<span class="badge b-red">✗ Vắng</span>';
+    else if(bu)b=`<span class="badge b-bu">🔄 Bù${att.mfor?' (từ '+fd(att.mfor)+')':''}</span>`;
+    btns=b;
+  }
+  return`<div class="fx ic g2r mb2${guest?' guest-row':''}" style="flex-wrap:wrap">${avi(name,27,10)}<span class="fs6" style="flex:1;min-width:100px;font-size:12px">${name}${guestTag}</span>${btns}</div>`;
+}
+function setA(sid,st){
+  if(!tempAtt[sid])tempAtt[sid]={st:null,mfor:null,guest:false};
+  tempAtt[sid].st=tempAtt[sid].st===st?null:st;
+  if(tempAtt[sid].st!=='makeup')tempAtt[sid].mfor=null;
+  refreshAttUI();
+}
+function togGuestTc(){
+  const sel=document.getElementById('sess-tc'),inp=document.getElementById('sess-guest-nm'),wrap=document.getElementById('sess-guest-amt-wrap'),amtEl=document.getElementById('sess-guest-amt');
+  const isGuest=sel&&sel.value==='guest';
+  if(inp)inp.style.display=isGuest?'':'none';
+  if(wrap)wrap.style.display=isGuest?'':'none';
+  if(isGuest&&amtEl&&!amtEl.value){
+    const s=GSE(editSessId),ct=GC(s?.ctId);
+    if(ct)amtEl.value=ctSessionAmount(ct).toLocaleString('vi-VN');
+  }
+}
+function saveAtt(){
+  const s=GSE(editSessId);if(!s)return;
+  const ts=document.getElementById('sess-tc');
+  if(ts){
+    if(ts.value==='guest'){
+      const nm=(document.getElementById('sess-guest-nm')?.value||'').trim();
+      if(!nm){alert('Vui lòng nhập tên giáo viên thuê ngoài.');return;}
+      s.guestTeacher=nm;s.teacherId=null;
+      s.guestAmount=rawMoney('sess-guest-amt')||ctSessionAmount(GC(s.ctId));
+    }else{s.guestTeacher=null;s.guestAmount=null;s.teacherId=parseInt(ts.value);}
+  }
+  s.att=Object.entries(tempAtt).filter(([,a])=>a.st!==null).map(([id,a])=>{const me=document.getElementById(`mf-${id}`);return{sid:parseInt(id),st:a.st,mfor:me?me.value:a.mfor,guest:!!a.guest};});
+  saveD();closeM('mo-sess');renderTab(currentTab);
+}
+function togCZ(){const z=document.getElementById('cz');if(!z)return;const show=!z.className.includes('show');z.className='cz'+(show?' show':'');if(show)setTimeout(()=>z.scrollIntoView({behavior:'smooth',block:'nearest'}),50);}
+function doCancel(){
+  const s=GSE(editSessId);if(!s)return;
+  s.cancelled=true;s.cancelNote=document.getElementById('cz-note').value.trim();
+  if(document.getElementById('cz-comp')?.checked){
+    const ct=GC(s.ctId),ds=fd(s.date);
+    (ct?.studentIds||[]).forEach(sid=>{const p=pkgForDate(sid,s.date);if(p&&p.type==='sessions'){p.total+=1;if(!p.exts)p.exts=[];p.exts.push({date:TODAY,reason:`Ca off ${ds}`,added:1});}});
+  }
+  saveD();closeM('mo-sess');renderTab(currentTab);
+}
+
+// CLASSES
+function setCV(v){classView=v;document.querySelectorAll('#cls-vnav .vn-item').forEach((el,i)=>el.classList.toggle('active',i===(v==='summary'?0:1)));renderCls();}
+function renderCls(){
+  const mo=viewMonth.getMonth(),yr=viewMonth.getFullYear();
+  const cts=isAdmin()?D.classTypes:D.classTypes.filter(c=>c.teacherId===curTid());
+  const DOW=['CN','T2','T3','T4','T5','T6','T7'];
+  if(classView==='summary'){
+    document.getElementById('cls-list').innerHTML=cts.map(ct=>{
+      const t=GT(ct.teacherId),ms=moSess(mo,yr).filter(s=>s.ctId===ct.id);
+      const rows=(ct.studentIds||[]).map(sid=>{
+        const st=GS(sid);if(!st)return'';let p=0,a=0,b=0;
+        ms.forEach(s=>{const ar=s.att.find(x=>x.sid===sid);if(ar?.st==='present')p++;else if(ar?.st==='absent')a++;else if(ar?.st==='makeup')b++;});
+        const stB=st.status!=='active'?`<span class="badge ${st.status==='paused'?'b-pause':'b-stop'} txs">${st.status==='paused'?'Tạm nghỉ':'Đã nghỉ'}</span>`:'';
+        return`<tr><td><div class="fx ic g2r">${avi(st.name,23,9)}<span style="cursor:pointer;color:var(--green);font-weight:600" onclick="openStuM(${sid})">${st.name}</span> ${stB}</div></td><td><span class="badge b-ok">✓ ${p}</span></td><td><span class="badge b-red">✗ ${a}</span></td><td><span class="badge b-bu">🔄 ${b}</span></td></tr>`;
+      }).join('');
+      return`<div class="c-block"><div class="cb-hd"><div class="c-stripe" style="background:${ct.color}"></div><div style="flex:1"><div class="fb" style="color:${ct.color}">${ct.name}</div><div class="tsm tmu mt1">${ct.days.map(d=>DOW[d]).join(', ')} · ${ct.time} · <strong>${t?.name}</strong> · ${ct.durationHours||1.5}h · ${fv(ct.hourlyRate||0)}/giờ</div></div><div class="tsm tmu">${ms.filter(s=>!s.cancelled).length} buổi · ${(ct.studentIds||[]).length} HV</div>${isAdmin()?`<button class="btn btn-g btn-sm" style="margin-left:8px" onclick="openEditCt(${ct.id})">✏️ Sửa</button>`:''}</div><table class="tbl"><thead><tr><th>Học viên</th><th>Có mặt</th><th>Vắng</th><th>Bù</th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="tmu tsm" style="padding:12px">Chưa có học viên.</td></tr>'}</tbody></table></div>`;
+    }).join('');
+  }else{document.getElementById('cls-list').innerHTML=cts.map(ct=>buildMx(ct,mo,yr)).join('');}
+}
+function buildMx(ct,mo,yr){
+  const t=GT(ct.teacherId),sess=moSess(mo,yr).filter(s=>s.ctId===ct.id).sort((a,b)=>a.date.localeCompare(b.date));
+  const studs=(ct.studentIds||[]).map(id=>GS(id)).filter(Boolean),ce=canEdit({teacherId:ct.teacherId});
+  let h=`<div class="c-block mb3"><div class="cb-hd"><div class="c-stripe" style="background:${ct.color}"></div><div style="flex:1"><div class="fb" style="color:${ct.color}">${ct.name}</div><div class="tsm tmu mt1">${VI_MO[mo]} ${yr} · GV: ${t?.name}</div></div><div class="tsm tmu">${sess.filter(s=>!s.cancelled).length} buổi</div></div>`;
+  if(!sess.length)return h+'<div style="padding:12px 15px" class="tsm tmu">Không có buổi học nào.</div></div>';
+  h+=`<div class="att-mx"><table><thead><tr><th class="s-col" style="min-width:130px">Học viên</th>`;
+  sess.forEach(s=>{const[,m,d]=s.date.split('-');h+=`<th style="min-width:52px;text-align:center"><div>${d}/${m}</div><div class="txs tmu">${dow(s.date)}</div>${s.cancelled?'<div style="color:var(--red);font-size:9px">❌</div>':''}</th>`;});
+  h+=`<th style="min-width:38px">∑</th></tr></thead><tbody>`;
+  studs.forEach(st=>{
+    const stB=st.status!=='active'?`<br><span class="badge ${st.status==='paused'?'b-pause':'b-stop'}" style="font-size:8px">${st.status==='paused'?'Tạm':'Nghỉ'}</span>`:'';
+    h+=`<tr><td class="s-col" style="padding:6px 10px"><div class="fx ic g2r">${avi(st.name,21,9)}<div style="font-size:11px;font-weight:600;line-height:1.4">${st.name}${stB}</div></div></td>`;
+    let pc=0;
+    sess.forEach(s=>{
+      const att=s.att.find(a=>a.sid===st.id),past=s.date<=TODAY;
+      let cell='';
+      if(s.cancelled)cell='<span style="color:#C9BBA5">×</span>';
+      else if(!past)cell='<span style="color:#DDD0BB">—</span>';
+      else if(!att)cell=ce?'<span style="color:#C9BBA5">·</span>':'<span style="color:#DDD0BB">·</span>';
+      else if(att.st==='present'){cell='<span style="color:var(--green);font-size:15px;font-weight:800">✓</span>';pc++;}
+      else if(att.st==='absent')cell='<span style="color:var(--red);font-size:13px">✗</span>';
+      else if(att.st==='makeup'){const fr=att.mfor?att.mfor.slice(5).replace('-','/'):'';cell=`<span class="bu-chip">Bù${fr?'<br>từ '+fr:''}</span>`;pc++;}
+      const click=ce&&past&&!s.cancelled;
+      h+=`<td ${click?`class="mx-cc" onclick="cycleC('${s.id}',${st.id})"`:''} style="padding:5px 3px">${cell}</td>`;
+    });
+    h+=`<td style="font-weight:800;color:var(--green);font-size:13px">${pc}</td></tr>`;
+  });
+  return h+'</tbody></table></div></div>';
+}
+function cycleC(sid,stid){
+  const s=GSE(sid);if(!s)return;
+  const i=s.att.findIndex(a=>a.sid===stid);
+  if(i===-1)s.att.push({sid:stid,st:'present',mfor:null});
+  else if(s.att[i].st==='present')s.att[i].st='absent';
+  else s.att.splice(i,1);
+  saveD();renderCls();
+}
+
+// TEACHERS
+function rTc(){
+  const mo=viewMonth.getMonth(),yr=viewMonth.getFullYear();
+  document.getElementById('tc-tbl-ttl').textContent=`Tất cả buổi — ${VI_MO[mo]} ${yr}`;
+  document.getElementById('tc-grid').innerHTML=D.teachers.map(t=>{
+    const cls=D.classTypes.filter(x=>x.teacherId===t.id);
+    const {rows:salRows,total}=teacherSalaryDetail(t.id,mo,yr);
+    const c=salRows.reduce((a,r)=>a+r.count,0);
+    const sal=salSt(t.id,mo,yr);
+    const rows=salRows.map(r=>`<div class="fx jb ic mb2" style="padding:5px 0;border-bottom:1px solid var(--border)"><div><span class="badge" style="background:${r.ct.color}18;color:${r.ct.color}">${r.ct.name}</span><div class="txs tmu mt1">${r.count} buổi × ${fv(r.perSession)}</div></div><span class="fb" style="color:${r.ct.color}">${fv(r.amount)}</span></div>`).join('')||'<p class="tmu txs">Chưa dạy buổi nào có điểm danh tháng này.</p>';
+    return`<div class="t-card">
+      <div class="fx jb ic">
+        <div class="fx g2r ic"><div class="avi" style="width:42px;height:42px;font-size:16px;background:${t.color}">${t.name[0]}</div><div><div class="fb" style="font-size:15px">${t.name}</div><div class="tsm tmu">${cls.length} ca phụ trách · ${c} buổi tháng này</div></div></div>
+        <div style="text-align:right"><div class="t-big" style="color:${t.color};font-size:19px">${fv(total)}</div><div class="txs tmu">lương tháng này</div></div>
+      </div>
+      <div class="sep mt2"></div>
+      <div class="txs fb tmu mt2 mb1" style="text-transform:uppercase;letter-spacing:.5px">Chi tiết theo ca (${VI_MO[mo]}) — tính khi có điểm danh</div>
+      ${rows}
+      <div class="sep mt2"></div>
+      <div class="fx jb ic mt2">
+        <span class="txs fb tmu" style="text-transform:uppercase;letter-spacing:.5px">Lương ${VI_MO[mo]}</span>
+        <div class="fx g2r">
+          <button class="sal-btn ${sal==='paid'?'sal-paid':''}" onclick="setSalSt(${t.id},${mo},${yr},'paid');rTc()">✅ Đã thanh toán</button>
+          <button class="sal-btn ${sal==='unpaid'?'sal-unpaid':''}" onclick="setSalSt(${t.id},${mo},${yr},'unpaid');rTc()">🔴 Nợ lương</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  const all=moSess(mo,yr).sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
+  document.getElementById('tc-tbl').innerHTML=`<table class="tbl"><thead><tr><th>Ngày</th><th>Giờ</th><th>Ca tập</th><th>Giáo viên</th><th>Có mặt</th><th>TT</th><th></th></tr></thead><tbody>${all.map(s=>{const ct=GC(s.ctId),t=GT(s.teacherId),tNm=s.guestTeacher||t?.name||'—',tCol=s.guestTeacher?'#8B7A63':(t?.color||'#999'),p=s.att.filter(a=>a.st==='present'||a.st==='makeup').length,tot=(ct?.studentIds||[]).length,past=s.date<=TODAY;return`<tr><td>${fd(s.date)}</td><td>${s.time}</td><td><span class="badge" style="background:${ct?.color}18;color:${ct?.color}">${ct?.name}</span></td><td><span class="badge" style="background:${tCol}18;color:${tCol}">${tNm}${s.guestTeacher?' 🔗':''}</span></td><td>${past&&!s.cancelled?`${p}/${tot}`:'—'}</td><td>${s.cancelled?'<span class="badge b-red">❌</span>':past?'<span class="badge b-ok">Xong</span>':'<span class="badge b-dim">Sắp tới</span>'}</td><td><button class="btn btn-g btn-sm" onclick="openSess('${s.id}')">Xem</button></td></tr>`;}).join('')}</tbody></table>`;
+}
+
+// STUDENTS
+function setSF(f){
+  stuFilter=f;
+  const keys=['active','paused','stopped'],lbls=['🟢 Đang học','🟡 Tạm nghỉ','🔴 Đã nghỉ'];
+  const cnt=Object.fromEntries(keys.map(k=>[k,D.students.filter(s=>s.status===k).length]));
+  document.querySelectorAll('#stu-vnav .vn-item').forEach((el,i)=>{el.textContent=`${lbls[i]} (${cnt[keys[i]]})`;el.onclick=()=>setSF(keys[i]);el.classList.toggle('active',i===keys.indexOf(f));});
+  renderStudents();
+}
+function renderStudents(){
+  const keys=['active','paused','stopped'],lbls=['🟢 Đang học','🟡 Tạm nghỉ','🔴 Đã nghỉ'];
+  const cnt=Object.fromEntries(keys.map(k=>[k,D.students.filter(s=>s.status===k).length]));
+  document.querySelectorAll('#stu-vnav .vn-item').forEach((el,i)=>el.textContent=`${lbls[i]} (${cnt[keys[i]]})`);
+  document.querySelectorAll('#stu-vnav .vn-item').forEach((el,i)=>el.classList.toggle('active',i===keys.indexOf(stuFilter)));
+  const q=(document.getElementById('stu-srch')?.value||'').toLowerCase();
+  const list=D.students.filter(s=>s.status===stuFilter&&(s.name.toLowerCase().includes(q)||s.phone.includes(q)));
+  document.getElementById('stu-list').innerHTML=list.length?list.map(s=>{
+    const pkg=actPkg(s.id),st=pkgSt(pkg),cls=s.classTypeIds.map(id=>GC(id)?.name).filter(Boolean).join(' · ');
+    const stB=s.status!=='active'?`<span class="badge ${s.status==='paused'?'b-pause':'b-stop'} tsm">${s.status==='paused'?'🟡 Tạm nghỉ':'🔴 Đã nghỉ'}</span>`:'';
+    return`<div class="s-row" onclick="openStuM(${s.id})">${avi(s.name,35,12)}<div style="flex:1"><div class="fs6">${s.name} ${stB}</div><div class="tsm tmu mt1">${s.phone}${cls?' · '+cls:''}</div>${s.statusNote?`<div class="txs tmu">📝 ${s.statusNote}</div>`:''}</div><span class="badge ${st.cls}">${st.lbl}</span><span class="tmu" style="padding-left:6px">›</span></div>`;
+  }).join(''):'<p class="tmu tsm" style="padding:13px">Không có học viên nào.</p>';
+}
+function openStuM(sid){
+  const s=GS(sid);if(!s)return;
+  editStuId=sid;pendingStuSt=s.status;
+  const pkg=actPkg(sid),st=pkgSt(pkg);
+  const clsB=s.classTypeIds.map(id=>{const ct=GC(id);return ct?`<span class="badge" style="background:${ct.color}18;color:${ct.color};margin-right:3px">${ct.name}</span>`:''}).join('');
+  const payB=pkg?`<span class="badge ${pkg.payStatus==='paid'?'b-pay-ok':'b-pay-wait'}" style="margin-left:5px">${pkg.payStatus==='paid'?'✅ Đã đóng phí':'🟡 Đang xử lý'}</span>`:'';
+  let pkgH='<p class="tmu tsm mt2">Chưa có gói học phí.</p>';
+  if(pkg){
+    const used=pkgUsed(pkg);
+    if(pkg.type==='sessions'){
+      const rem=pkg.total-used,pct=Math.min(used/(pkg.total||1)*100,100).toFixed(0);
+      const exN=pkg.exts?.length?`<div class="txs mt1" style="color:var(--green)">+${pkg.exts.reduce((t,e)=>t+e.added,0)} buổi bù ca off</div>`:'';
+      pkgH=`<div class="pkg"><div class="fx jb ic"><div><div class="txs tmu">Gói theo buổi</div><div class="fs6 mt1">${pkg.total} buổi · Đã dùng ${used} · Còn ${rem}</div>${exN}</div><div class="amount">${fv(pkg.amount)}</div></div><div class="progress mt2"><div class="pbar${rem<=2?' red':''}" style="width:${pct}%"></div></div><div class="fx jb mt1 txs tmu"><span>${fd(pkg.start)} → ${fd(pkg.end)}</span><span>Đóng ${fd(pkg.paid)}</span></div></div>`;
+    }else{const d=dl(pkg.end);pkgH=`<div class="pkg"><div class="fx jb ic"><div><div class="txs tmu">Gói tháng (${pkg.months} tháng)</div><div class="fs6 mt1">${fd(pkg.start)} → ${fd(pkg.end)}</div></div><div class="amount">${fv(pkg.amount)}</div></div><div class="mt2 tsm" style="color:${d!==null&&d<0?'var(--red)':d!==null&&d<=7?'var(--amber)':'var(--green)'}">${d===null?'':d<0?'Đã hết hạn':`Còn ${d} ngày`}</div></div>`;}
+  }
+  // Lịch sử điểm danh: bao gồm cả buổi ở ca đăng ký lẫn buổi học bù ở ca khác
+  const hs=D.sessions.filter(se=>se.date<=TODAY&&se.att.some(a=>a.sid===sid)).sort((a,b)=>b.date.localeCompare(a.date));
+  let tp=0;
+  const hH=hs.length?`<div style="border:1px solid var(--border);border-radius:7px;overflow:hidden;max-height:220px;overflow-y:auto">${hs.map(se=>{const att=se.att.find(a=>a.sid===sid),ct=GC(se.ctId);let bg='<span class="badge b-dim">Chưa đ/danh</span>';if(att?.st==='present'){bg='<span class="badge b-ok">✓ Có mặt</span>';tp++;}else if(att?.st==='absent')bg='<span class="badge b-red">✗ Vắng</span>';else if(att?.st==='makeup'){bg=`<span class="badge b-bu">🔄 Bù${att.mfor?' (từ '+fd(att.mfor)+')':''}</span>`;tp++;}const gTag=att?.guest?'<span class="badge b-bu txs" style="margin-left:3px">Học bù</span>':'';return`<div class="ah-row"><span class="tmu" style="width:80px;flex-shrink:0">${fd(se.date)}</span><span style="flex:1;color:${ct?.color};font-weight:600">${ct?.name}${gTag}</span>${bg}${se.cancelled?'<span class="badge b-red txs">Huỷ</span>':''}</div>`;}).join('')}</div>`:'<p class="tmu tsm mt1">Chưa có buổi nào đã qua.</p>';
+  // Toàn bộ lịch sử gói phí (mọi lần đóng/gia hạn từ trước tới nay)
+  const allPkgs=D.packages.filter(p=>p.studentId===sid).sort((a,b)=>b.start.localeCompare(a.start));
+  const totalPaid=allPkgs.reduce((t,p)=>t+(p.amount||0),0);
+  const pkH=allPkgs.length?allPkgs.map(p=>{
+    const pst=pkgSt(p),isCur=pkg&&p.id===pkg.id;
+    const ppay=`<span class="badge ${p.payStatus==='paid'?'b-pay-ok':'b-pay-wait'} txs">${p.payStatus==='paid'?'✅ Đã đóng':'🟡 Đang xử lý'}</span>`;
+    const det=p.type==='sessions'?`${p.total} buổi`:`Gói tháng · ${p.months} tháng`;
+    return`<div class="pkg" style="margin-bottom:7px;${isCur?'border-color:var(--green)':''}"><div class="fx jb" style="align-items:flex-start"><div><div class="fs6 tsm">${det}${isCur?' <span class="badge b-ok txs">Hiện tại</span>':''}</div><div class="txs tmu mt1">${fd(p.start)} → ${fd(p.end)}</div><div class="txs tmu">Đóng tiền: ${fd(p.paid)}</div>${p.notes?`<div class="txs tmu">📝 ${p.notes}</div>`:''}</div><div style="text-align:right;flex-shrink:0;margin-left:8px"><div class="amount" style="font-size:14px">${fv(p.amount)}</div><div class="mt1">${ppay}</div><div class="mt1"><span class="badge ${pst.cls} txs">${pst.lbl}</span></div><button class="btn btn-g btn-sm mt1" onclick="closeM('mo-stu');openEditPkg(${p.id})">✏️ Sửa</button></div></div></div>`;
+  }).join(''):'<p class="tmu tsm">Chưa từng mua gói nào.</p>';
+  const stSel=`<div class="fx g2r mb2"><button class="st-btn st-a ${s.status==='active'?'on-a':''}" onclick="selSSt('active')">🟢 Đang học</button><button class="st-btn st-p ${s.status==='paused'?'on-p':''}" onclick="selSSt('paused')">🟡 Tạm nghỉ</button><button class="st-btn st-s ${s.status==='stopped'?'on-s':''}" onclick="selSSt('stopped')">🔴 Đã nghỉ</button></div><div id="st-na" style="${s.status!=='active'?'':'display:none'}"><input type="text" class="fi mb2" id="st-note" value="${s.statusNote||''}" placeholder="Ghi chú lý do..."><div class="fg"><label class="fl">Ngày dự kiến quay lại</label><input type="date" class="fi" id="st-ret" value="${s.returnDate||''}"></div></div><button class="btn btn-p btn-sm mt2" onclick="saveStuSt()">Lưu trạng thái</button>`;
+  document.getElementById('mstu-ttl').textContent=s.name;
+  document.getElementById('mstu-bd').innerHTML=`
+    <div class="fx g3r ic mb3">${avi(s.name,48,17)}<div><div class="fb" style="font-size:17px">${s.name}</div><div class="tsm tmu">${s.phone}</div><div class="mt1">${clsB||'<span class="tmu tsm">Chưa đăng ký ca</span>'}</div></div></div>
+    <div class="g4 mb3">
+      <div class="stat" style="padding:10px 11px"><div class="s-lbl">Buổi đã học</div><div class="s-val" style="font-size:18px">${tp}</div><div class="s-sub">từ trước tới nay</div></div>
+      <div class="stat" style="padding:10px 11px"><div class="s-lbl">Số gói đã mua</div><div class="s-val" style="font-size:18px">${allPkgs.length}</div></div>
+      <div class="stat" style="padding:10px 11px"><div class="s-lbl">Tổng đã đóng</div><div class="s-val" style="font-size:15px">${fv(totalPaid)}</div></div>
+      <div class="stat" style="padding:10px 11px"><div class="s-lbl">Gói hiện tại</div><div class="mt1"><span class="badge ${st.cls}">${st.lbl}</span>${payB}</div></div>
+    </div>
+    <div class="txs fb tmu" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Gói học phí hiện tại</div>${pkgH}
+    <div class="fx g2r mt2"><button class="btn btn-p btn-sm" onclick="openAddPkg(${sid})">+ Gia hạn / Thêm gói mới</button></div>
+    <div class="sep"></div>
+    <div class="txs fb tmu" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">📜 Toàn bộ lịch sử gói phí (${allPkgs.length} gói · từ lúc đăng ký)</div>
+    <div style="max-height:280px;overflow-y:auto">${pkH}</div>
+    <div class="sep"></div><div class="txs fb tmu" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Lịch sử điểm danh</div>${hH}
+    <div class="sep"></div><div class="txs fb tmu" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px">Trạng thái học</div>${stSel}`;
+  openM('mo-stu');
+}
+function selSSt(st){
+  pendingStuSt=st;
+  document.querySelectorAll('.st-btn').forEach(b=>{b.classList.remove('on-a','on-p','on-s');});
+  document.querySelector(`.st-${st==='active'?'a':st==='paused'?'p':'s'}`)?.classList.add(st==='active'?'on-a':st==='paused'?'on-p':'on-s');
+  document.getElementById('st-na').style.display=st!=='active'?'':'none';
+}
+function saveStuSt(){
+  const s=GS(editStuId);if(!s)return;
+  s.status=pendingStuSt;
+  s.statusNote=document.getElementById('st-note')?.value.trim()||'';
+  s.returnDate=document.getElementById('st-ret')?.value||'';
+  saveD();closeM('mo-stu');renderStudents();
+}
+
+// INCOME
+function rInc(){
+  const mo=viewMonth.getMonth(),yr=viewMonth.getFullYear();
+  const pfx=`${yr}-${String(mo+1).padStart(2,'0')}`;
+  const mInc=D.packages.filter(p=>p.paid?.startsWith(pfx)).reduce((s,p)=>s+(p.amount||0),0);
+  const tot=D.packages.reduce((s,p)=>s+(p.amount||0),0);
+  const exp=D.students.filter(s=>s.status==='active'&&pkgSt(actPkg(s.id)).urg).length;
+  document.getElementById('inc-stats').innerHTML=`<div class="stat"><div class="s-lbl">Thu tháng ${mo+1}/${yr}</div><div class="s-val" style="font-size:17px">${fv(mInc)}</div></div><div class="stat"><div class="s-lbl">Tổng thu tất cả</div><div class="s-val" style="font-size:17px">${fv(tot)}</div></div><div class="stat"><div class="s-lbl">Cần gia hạn</div><div class="s-val" style="color:${exp>0?'var(--amber)':'var(--green)'}">${exp}</div><div class="s-sub">học viên</div></div>`;
+  document.getElementById('pkg-list').innerHTML=[...D.packages].sort((a,b)=>(b.paid||'').localeCompare(a.paid||'')).map(pkg=>{
+    const s=GS(pkg.studentId);if(!s)return'';const st=pkgSt(pkg),used=pkgUsed(pkg);
+    let det=pkg.type==='sessions'?`<div class="tsm tmu mt1">${pkg.total} buổi · Đã dùng ${used} · Còn ${pkg.total-used}</div>${pkg.exts?.length?`<div class="txs" style="color:var(--green)">+${pkg.exts.reduce((t,e)=>t+e.added,0)} bù ca off</div>`:''}<div class="progress mt2" style="max-width:140px"><div class="pbar${pkg.total-used<=2?' red':''}" style="width:${Math.min(used/(pkg.total||1)*100,100).toFixed(0)}%"></div></div>`:`<div class="tsm tmu mt1">Gói tháng · ${fd(pkg.start)} → ${fd(pkg.end)}</div>`;
+    const payB=`<span class="badge ${pkg.payStatus==='paid'?'b-pay-ok':'b-pay-wait'}" style="margin-left:4px">${pkg.payStatus==='paid'?'✅ Đã đóng phí':'🟡 Đang xử lý'}</span>`;
+    return`<div class="pkg"><div class="fx jb" style="align-items:flex-start"><div class="fx g2r ic">${avi(s.name,31,11)}<div><span class="fs6 tsm" style="cursor:pointer;color:var(--green)" onclick="openStuM(${s.id})">${s.name}</span>${det}${pkg.notes?`<div class="txs tmu">📝 ${pkg.notes}</div>`:''}</div></div><div style="text-align:right;flex-shrink:0;margin-left:10px"><div class="amount" style="font-size:15px">${fv(pkg.amount)}</div><div class="txs tmu">Đóng ${fd(pkg.paid)}</div><div class="mt1">${payB}</div><div class="mt1"><span class="badge ${st.cls}">${st.lbl}</span></div><button class="btn btn-g btn-sm mt2" onclick="openEditPkg(${pkg.id})">✏️ Sửa</button></div></div></div>`;
+  }).join('');
+}
+
+// SETTINGS
+function rSet(){
+  document.getElementById('set-sname').value=D.settings?.studioName||'Palm Yoga Studio';
+  document.getElementById('pin-body').innerHTML=`
+    <div class="pin-row"><span class="tmu tsm">PIN mới</span><input type="password" class="fi" id="pin-a" placeholder="••••••" style="letter-spacing:4px;text-align:center;max-width:140px"></div>
+    <div class="pin-row"><span class="tmu tsm">Xác nhận</span><input type="password" class="fi" id="pin-a2" placeholder="••••••" style="letter-spacing:4px;text-align:center;max-width:140px"></div>
+    <button class="btn btn-p btn-sm mt3" onclick="saveAdminPin(this)">💾 Lưu PIN Admin</button>`;
+  renderTcMgmt();
+}
+function saveStName(){
+  if(!D.settings)D.settings={};D.settings.studioName=document.getElementById('set-sname').value.trim()||'Palm Yoga Studio';
+  document.getElementById('s-name').textContent=D.settings.studioName;saveD();
+  const el=document.getElementById('set-sname');el.style.borderColor='var(--green)';setTimeout(()=>el.style.borderColor='',1500);
+}
+function saveAdminPin(btn){
+  if(!D.settings)D.settings={};
+  const v=document.getElementById('pin-a').value.trim(),v2=document.getElementById('pin-a2').value.trim();
+  if(!v){alert('Vui lòng nhập PIN mới.');return;}
+  if(v!==v2){alert('Hai PIN không khớp.');return;}
+  D.settings.adminPin=v;
+  saveD();document.getElementById('pin-a').value='';document.getElementById('pin-a2').value='';
+  btn.textContent='✓ Đã lưu!';btn.style.background='var(--gold)';
+  setTimeout(()=>{btn.textContent='💾 Lưu PIN Admin';btn.style.background='';},2000);
+}
+
+// TEACHER MANAGEMENT
+const TC_COLORS=['#A9834A','#BE7355','#7C8F5E','#C08A3E','#B85C4A','#8B5E3C','#B5924F','#9C6B4E'];
+function renderTcMgmt(){
+  const rows=D.teachers.map(t=>`
+    <tr>
+      <td style="padding:10px 15px">
+        <div class="fx ic g2r">
+          <input type="color" value="${t.color}" id="tcol-${t.id}" style="width:32px;height:32px;border:2px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;background:none">
+          <input type="text" class="fi" id="tnm-${t.id}" value="${t.name}" style="max-width:130px;padding:6px 9px">
+        </div>
+      </td>
+      <td style="padding:10px">
+        <input type="password" class="fi" id="tpin-${t.id}" placeholder="PIN mới..." style="max-width:110px;text-align:center;letter-spacing:4px;padding:6px 9px">
+      </td>
+      <td style="padding:10px">
+        <div class="fx ic g2r">
+          <button class="btn btn-p btn-sm" onclick="saveTcRow(${t.id},this)">Lưu</button>
+          <button class="btn btn-r btn-sm" onclick="delTc(${t.id})">Xoá</button>
+        </div>
+      </td>
+    </tr>`).join('');
+  document.getElementById('tc-mgmt').innerHTML=`<table class="tbl"><thead><tr><th>Tên & Màu</th><th>Đổi PIN</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function saveTcRow(tid,btn){
+  const t=GT(tid);if(!t)return;
+  const nm=document.getElementById(`tnm-${tid}`)?.value.trim();
+  const pin=document.getElementById(`tpin-${tid}`)?.value.trim();
+  const col=document.getElementById(`tcol-${tid}`)?.value;
+  if(!nm){alert('Tên không được để trống.');return;}
+  t.name=nm;t.color=col||t.color;
+  if(pin)t.pin=pin;
+  saveD();buildLoginDD();
+  if(pin)document.getElementById(`tpin-${tid}`).value='';
+  btn.textContent='✓';btn.style.background='var(--gold)';
+  setTimeout(()=>{btn.textContent='Lưu';btn.style.background='';renderTcMgmt();rTc();},1400);
+}
+function delTc(tid){
+  const t=GT(tid);if(!t)return;
+  const cls=D.classTypes.filter(c=>c.teacherId===tid);
+  if(cls.length){alert(`GV ${t.name} đang phụ trách ${cls.length} ca tập. Hãy chuyển ca đó sang GV khác trước khi xoá.`);return;}
+  if(!confirm(`Xoá giáo viên "${t.name}"? Không thể hoàn tác.`))return;
+  D.teachers=D.teachers.filter(tc=>tc.id!==tid);
+  saveD();buildLoginDD();renderTcMgmt();
+}
+function openAddTc(){
+  document.getElementById('ntc-nm').value='';
+  document.getElementById('ntc-pin').value='';
+  document.getElementById('ntc-col').value='#A9834A';
+  document.querySelectorAll('.tc-swatch').forEach(s=>s.style.outline='none');
+  openM('mo-ntc');
+}
+function saveNewTc(){
+  const name=document.getElementById('ntc-nm').value.trim();
+  const pin=document.getElementById('ntc-pin').value.trim();
+  const color=document.getElementById('ntc-col').value;
+  if(!name){alert('Vui lòng nhập tên giáo viên.');return;}
+  if(!pin){alert('Vui lòng nhập mã PIN.');return;}
+  const nid=Math.max(...D.teachers.map(t=>t.id),0)+1;
+  D.teachers.push({id:nid,name,color,pin});
+  saveD();buildLoginDD();closeM('mo-ntc');renderTcMgmt();
+}
+
+// ADD MODALS
+function openAddSess(){
+  document.getElementById('ns-cls').innerHTML=D.classTypes.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('ns-tc').innerHTML=D.teachers.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  document.getElementById('ns-dt').value=TODAY;document.getElementById('ns-tm').value='07:00';
+  openM('mo-as');
+}
+function saveNewSess(){
+  const date=document.getElementById('ns-dt').value;if(!date){alert('Vui lòng chọn ngày.');return;}
+  D.sessions.push({id:'s'+Date.now(),ctId:parseInt(document.getElementById('ns-cls').value),date,time:document.getElementById('ns-tm').value,teacherId:parseInt(document.getElementById('ns-tc').value),extra:document.getElementById('ns-ex').checked,cancelled:false,cancelNote:'',att:[]});
+  saveD();closeM('mo-as');renderCal();
+}
+function openAddStu(){
+  document.getElementById('ast-nm').value='';document.getElementById('ast-ph').value='';
+  document.getElementById('ast-cls').innerHTML=D.classTypes.map(ct=>`<label style="display:flex;align-items:center;gap:7px;margin-bottom:7px;cursor:pointer;font-size:13px"><input type="checkbox" value="${ct.id}"><span class="dot" style="background:${ct.color}"></span>${ct.name}</label>`).join('');
+  openM('mo-stu2');
+}
+function saveNewStu(){
+  const name=document.getElementById('ast-nm').value.trim();if(!name){alert('Vui lòng nhập tên.');return;}
+  const ctIds=[...document.querySelectorAll('#ast-cls input:checked')].map(el=>parseInt(el.value));
+  const nid=Math.max(...D.students.map(s=>s.id),0)+1;
+  D.students.push({id:nid,name,phone:document.getElementById('ast-ph').value.trim(),classTypeIds:ctIds,status:'active',statusNote:'',returnDate:''});
+  ctIds.forEach(cid=>{const ct=GC(cid);if(ct&&!ct.studentIds.includes(nid))ct.studentIds.push(nid);});
+  saveD();closeM('mo-stu2');renderStudents();
+}
+let pkFreqN=0;
+function openAddPkg(preId){
+  document.getElementById('pk-stu').innerHTML=D.students.map(s=>`<option value="${s.id}" ${s.id===preId?'selected':''}>${s.name}</option>`).join('');
+  document.getElementById('pk-tp').value='sessions';
+  document.getElementById('pk-pay').value='paid';
+  document.getElementById('pk-sess').value='10';document.getElementById('pk-mon').value='1';
+  document.getElementById('pk-st').value=TODAY;document.getElementById('pk-pd').value=TODAY;
+  document.getElementById('pk-amt').value='';document.getElementById('pk-nt').value='';
+  pkFreqN=0;document.getElementById('pk-f2').classList.remove('on-a');document.getElementById('pk-f3').classList.remove('on-a');
+  togPk();renderPkSchedRows();openM('mo-pk');
+}
+function togPk(){
+  const t=document.getElementById('pk-tp').value;
+  document.getElementById('pk-sw').style.display=t==='sessions'?'':'none';
+  document.getElementById('pk-mw').style.display=t==='monthly'?'':'none';
+  pkAutoEnd();
+}
+function pkAutoEnd(){
+  const type=document.getElementById('pk-tp').value,start=document.getElementById('pk-st').value;
+  if(!start)return;
+  const sd=new Date(start);let end;
+  if(type==='monthly'){const months=parseInt(document.getElementById('pk-mon').value)||1;end=dStr(new Date(sd.getFullYear(),sd.getMonth()+months,sd.getDate()-1));}
+  else end=dStr(new Date(sd.getFullYear(),sd.getMonth()+3,sd.getDate()));
+  document.getElementById('pk-end').value=end;
+}
+function setPkFreq(n){
+  pkFreqN=n;
+  document.getElementById('pk-f2').classList.toggle('on-a',n===2);
+  document.getElementById('pk-f3').classList.toggle('on-a',n===3);
+  renderPkSchedRows();
+}
+function renderPkSchedRows(){
+  const wrap=document.getElementById('pk-sched');if(!wrap)return;
+  if(!pkFreqN){wrap.innerHTML='<p class="tmu txs">Chọn tần suất tập/tuần ở trên trước.</p>';return;}
+  if(!D.classTypes.length){wrap.innerHTML='<p class="tmu txs">Chưa có ca tập nào trong hệ thống — hãy tạo ca tập trước.</p>';return;}
+  let h='';
+  for(let i=0;i<pkFreqN;i++)h+=`<div class="sch-row"><select class="fs" id="pk-sch-ct-${i}" style="max-width:200px" onchange="pkSchDayOpts(${i})"></select><select class="fs" id="pk-sch-day-${i}" style="max-width:100px"></select></div>`;
+  wrap.innerHTML=h;
+  for(let i=0;i<pkFreqN;i++){
+    document.getElementById(`pk-sch-ct-${i}`).innerHTML=D.classTypes.map(ct=>`<option value="${ct.id}">${ct.name} · ${ct.time}</option>`).join('');
+    pkSchDayOpts(i);
+  }
+}
+const DOW_LBL=['CN','T2','T3','T4','T5','T6','T7'];
+function pkSchDayOpts(i){
+  const sel=document.getElementById(`pk-sch-ct-${i}`);if(!sel)return;
+  const ct=GC(parseInt(sel.value)),daySel=document.getElementById(`pk-sch-day-${i}`);
+  daySel.innerHTML=(ct?.days||[]).map(d=>`<option value="${d}">${DOW_LBL[d]}</option>`).join('');
+}
+function savePkg(){
+  const sid=parseInt(document.getElementById('pk-stu').value),type=document.getElementById('pk-tp').value;
+  const start=document.getElementById('pk-st').value,paid=document.getElementById('pk-pd').value,end=document.getElementById('pk-end').value;
+  if(!end){alert('Vui lòng nhập ngày hết hạn gói (bắt buộc).');return;}
+  const amount=rawMoney('pk-amt');
+  const payStatus=document.getElementById('pk-pay').value;
+  let total=null,months=null;
+  if(type==='sessions')total=parseInt(document.getElementById('pk-sess').value)||10;
+  else months=parseInt(document.getElementById('pk-mon').value)||1;
+  const schedule=[];
+  for(let i=0;i<pkFreqN;i++){
+    const ctSel=document.getElementById(`pk-sch-ct-${i}`),daySel=document.getElementById(`pk-sch-day-${i}`);
+    if(ctSel&&daySel&&daySel.value!=='')schedule.push({ctId:parseInt(ctSel.value),day:parseInt(daySel.value)});
+  }
+  D.packages.push({id:Math.max(...D.packages.map(p=>p.id),0)+1,studentId:sid,type,total,months,start,end,paid,amount,payStatus,notes:document.getElementById('pk-nt').value.trim(),exts:[],schedule});
+  schedule.forEach(sc=>{const ct=GC(sc.ctId);if(ct&&!ct.studentIds.includes(sid))ct.studentIds.push(sid);});
+  const stu=GS(sid);if(stu)schedule.forEach(sc=>{if(!stu.classTypeIds.includes(sc.ctId))stu.classTypeIds.push(sc.ctId);});
+  saveD();closeM('mo-pk');renderTab(currentTab);
+}
+
+// EDIT PACKAGE (bảo lưu / đổi hạn / đổi trạng thái đóng phí)
+let editPkgId=null;
+function openEditPkg(pkgId){
+  const pkg=D.packages.find(p=>p.id===pkgId);if(!pkg)return;
+  editPkgId=pkgId;
+  document.getElementById('pke-type-row').textContent=`${GS(pkg.studentId)?.name||''} · ${pkg.type==='sessions'?'Gói theo buổi':'Gói theo tháng'}`;
+  document.getElementById('pke-sw').style.display=pkg.type==='sessions'?'':'none';
+  document.getElementById('pke-sess').value=pkg.total||'';
+  document.getElementById('pke-st').value=pkg.start||'';
+  document.getElementById('pke-end').value=pkg.end||'';
+  document.getElementById('pke-pay').value=pkg.payStatus||'paid';
+  document.getElementById('pke-amt').value=pkg.amount?pkg.amount.toLocaleString('vi-VN'):'';
+  document.getElementById('pke-nt').value=pkg.notes||'';
+  openM('mo-pke');
+}
+function saveEditPkg(){
+  const pkg=D.packages.find(p=>p.id===editPkgId);if(!pkg)return;
+  if(pkg.type==='sessions')pkg.total=parseInt(document.getElementById('pke-sess').value)||pkg.total;
+  pkg.start=document.getElementById('pke-st').value||pkg.start;
+  pkg.end=document.getElementById('pke-end').value||pkg.end;
+  pkg.payStatus=document.getElementById('pke-pay').value;
+  pkg.amount=rawMoney('pke-amt');
+  pkg.notes=document.getElementById('pke-nt').value.trim();
+  saveD();closeM('mo-pke');renderTab(currentTab);
+}
+
+// ADD CLASS TYPE (CA TẬP) — lịch cố định theo thứ, tự sinh buổi theo năm
+function openAddCt(){
+  document.getElementById('nct-nm').value='';
+  document.getElementById('nct-tm').value='07:00';
+  document.getElementById('nct-tc').innerHTML=D.teachers.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  document.getElementById('nct-days').innerHTML=DOW_LBL.map((l,i)=>`<label class="day-chk"><input type="checkbox" value="${i}">${l}</label>`).join('');
+  document.getElementById('nct-swatches').innerHTML=TC_COLORS.map((c,i)=>`<div class="tc-swatch" data-c="${c}" onclick="pickNctSwatch('${c}')" style="width:26px;height:26px;border-radius:50%;background:${c};cursor:pointer;${i===0?'outline:2px solid #4B3A22;outline-offset:2px':''}"></div>`).join('');
+  document.getElementById('nct-col').value=TC_COLORS[0];
+  openM('mo-nct');
+}
+function pickNctSwatch(c){document.getElementById('nct-col').value=c;document.querySelectorAll('#nct-swatches .tc-swatch').forEach(s=>{s.style.outline=s.dataset.c===c?'2px solid #4B3A22':'none';s.style.outlineOffset='2px';});}
+function saveNewCt(){
+  const name=document.getElementById('nct-nm').value.trim();if(!name){alert('Vui lòng nhập tên ca tập.');return;}
+  const days=[...document.querySelectorAll('#nct-days input:checked')].map(el=>parseInt(el.value));
+  if(!days.length){alert('Vui lòng chọn ít nhất 1 thứ trong tuần.');return;}
+  const time=document.getElementById('nct-tm').value||'07:00';
+  const teacherId=parseInt(document.getElementById('nct-tc').value);
+  const color=document.getElementById('nct-col').value;
+  const durationHours=parseFloat(document.getElementById('nct-dur').value)||1.5;
+  const hourlyRate=rawMoney('nct-rate');
+  const nid=D.nextCtId||(Math.max(...D.classTypes.map(c=>c.id),0)+1);
+  const ct={id:nid,name,days,time,teacherId,color,studentIds:[],durationHours,hourlyRate};
+  D.classTypes.push(ct);D.nextCtId=nid+1;
+  saveD();genForNewClassType(ct);
+  closeM('mo-nct');renderCls();renderCal();
+}
+
+// EDIT CLASS TYPE (đổi lương/giờ khi tăng lương, đổi GV, đổi giờ...)
+let editCtId=null;
+function openEditCt(ctId){
+  const ct=GC(ctId);if(!ct)return;
+  editCtId=ctId;
+  document.getElementById('ect-nm').value=ct.name;
+  document.getElementById('ect-tm').value=ct.time;
+  document.getElementById('ect-tc').innerHTML=D.teachers.map(t=>`<option value="${t.id}" ${t.id===ct.teacherId?'selected':''}>${t.name}</option>`).join('');
+  document.getElementById('ect-dur').value=ct.durationHours||1.5;
+  document.getElementById('ect-rate').value=ct.hourlyRate?ct.hourlyRate.toLocaleString('vi-VN'):'';
+  openM('mo-ecte');
+}
+function saveEditCt(){
+  const ct=GC(editCtId);if(!ct)return;
+  ct.name=document.getElementById('ect-nm').value.trim()||ct.name;
+  ct.time=document.getElementById('ect-tm').value||ct.time;
+  ct.teacherId=parseInt(document.getElementById('ect-tc').value);
+  ct.durationHours=parseFloat(document.getElementById('ect-dur').value)||ct.durationHours;
+  ct.hourlyRate=rawMoney('ect-rate');
+  saveD();closeM('mo-ecte');renderTab(currentTab);
+}
+
+// EXPENSES (CHI PHÍ)
+function rExp(){
+  const mo=viewMonth.getMonth(),yr=viewMonth.getFullYear();
+  const pfx=`${yr}-${String(mo+1).padStart(2,'0')}`;
+  const monthExp=D.expenses.filter(e=>e.date.startsWith(pfx));
+  const otherTotal=monthExp.reduce((s,e)=>s+(e.amount||0),0);
+  const salTotal=allTeacherSalaryTotal(mo,yr);
+  document.getElementById('exp-stats').innerHTML=`
+    <div class="stat"><div class="s-lbl">Tổng chi tháng này</div><div class="s-val" style="font-size:19px">${fv(otherTotal+salTotal)}</div><div class="s-sub">Lương GV + chi phí khác</div></div>
+    <div class="stat"><div class="s-lbl">Lương giáo viên</div><div class="s-val" style="font-size:19px">${fv(salTotal)}</div><div class="s-sub">${D.teachers.length} giáo viên</div></div>
+    <div class="stat"><div class="s-lbl">Chi phí khác</div><div class="s-val" style="font-size:19px">${fv(otherTotal)}</div><div class="s-sub">${monthExp.length} khoản chi</div></div>`;
+  document.getElementById('exp-salary').innerHTML=D.teachers.map(t=>{
+    const{rows,total}=teacherSalaryDetail(t.id,mo,yr);
+    if(!rows.length)return`<div class="fx jb ic mb2" style="padding:6px 0;border-bottom:1px solid var(--border)"><span class="fb" style="color:${t.color}">${t.name}</span><span class="tmu txs">Chưa có buổi điểm danh tháng này</span></div>`;
+    const detail=rows.map(r=>`${r.ct.name} (${r.count}×${fv(r.perSession)})`).join(' · ');
+    return`<div class="mb2" style="padding:6px 0;border-bottom:1px solid var(--border)"><div class="fx jb ic"><span class="fb" style="color:${t.color}">${t.name}</span><span class="fb" style="color:${t.color}">${fv(total)}</span></div><div class="txs tmu mt1">${detail}</div></div>`;
+  }).join('')+Object.entries(guestSalaryDetail(mo,yr)).map(([name,g])=>{
+    const detail=g.rows.map(r=>`${r.ct.name} (${r.count} buổi · ${fv(r.amount)})`).join(' · ');
+    return`<div class="mb2" style="padding:6px 0;border-bottom:1px solid var(--border)"><div class="fx jb ic"><span class="fb" style="color:var(--muted)">${name} <span class="badge b-dim txs">🔗 Thuê ngoài</span></span><span class="fb" style="color:var(--muted)">${fv(g.total)}</span></div><div class="txs tmu mt1">${detail}</div></div>`;
+  }).join('')+`<div class="fx jb ic mt2" style="padding-top:8px"><span class="fb">Tổng lương GV</span><span class="fb" style="font-size:16px;color:var(--palm-dk)">${fv(salTotal)}</span></div>`;
+  document.getElementById('exp-list').innerHTML=monthExp.length?[...monthExp].sort((a,b)=>b.date.localeCompare(a.date)).map(e=>`<div class="pkg"><div class="fx jb" style="align-items:flex-start"><div><div class="fs6 tsm">${e.title}</div><div class="txs tmu mt1">${fd(e.date)} · <span class="badge b-dim txs">${e.category}</span></div>${e.notes?`<div class="txs tmu mt1">📝 ${e.notes}</div>`:''}</div><div style="text-align:right;flex-shrink:0;margin-left:10px"><div class="amount" style="font-size:15px;color:var(--red)">-${fv(e.amount)}</div><button class="btn btn-g btn-sm mt2" onclick="openEditExp(${e.id})">✏️ Sửa</button> <button class="btn btn-r btn-sm mt2" onclick="deleteExp(${e.id})">🗑️</button></div></div></div>`).join(''):'<p class="tmu tsm">Chưa có khoản chi phí nào trong tháng này.</p>';
+}
+let editExpId=null;
+function openAddExp(){
+  editExpId=null;
+  document.getElementById('exp-ttl').textContent='Thêm Chi Phí';
+  document.getElementById('exp-nm').value='';
+  document.getElementById('exp-dt').value=TODAY;
+  document.getElementById('exp-amt').value='';
+  document.getElementById('exp-cat').value='Mua sắm dụng cụ';
+  document.getElementById('exp-nt').value='';
+  openM('mo-exp');
+}
+function openEditExp(id){
+  const e=D.expenses.find(x=>x.id===id);if(!e)return;
+  editExpId=id;
+  document.getElementById('exp-ttl').textContent='Sửa Chi Phí';
+  document.getElementById('exp-nm').value=e.title;
+  document.getElementById('exp-dt').value=e.date;
+  document.getElementById('exp-amt').value=e.amount?e.amount.toLocaleString('vi-VN'):'';
+  document.getElementById('exp-cat').value=e.category;
+  document.getElementById('exp-nt').value=e.notes||'';
+  openM('mo-exp');
+}
+function saveExp(){
+  const title=document.getElementById('exp-nm').value.trim();if(!title){alert('Vui lòng nhập tên khoản chi.');return;}
+  const date=document.getElementById('exp-dt').value||TODAY;
+  const amount=rawMoney('exp-amt');
+  const category=document.getElementById('exp-cat').value;
+  const notes=document.getElementById('exp-nt').value.trim();
+  if(editExpId){
+    const e=D.expenses.find(x=>x.id===editExpId);
+    if(e){e.title=title;e.date=date;e.amount=amount;e.category=category;e.notes=notes;}
+  }else{
+    D.expenses.push({id:Math.max(...D.expenses.map(x=>x.id),0)+1,date,title,amount,category,notes});
+  }
+  saveD();closeM('mo-exp');renderTab(currentTab);
+}
+function deleteExp(id){
+  if(!confirm('Xoá khoản chi phí này?'))return;
+  D.expenses=D.expenses.filter(x=>x.id!==id);
+  saveD();renderTab(currentTab);
+}
+
+// MODAL HELPERS
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(ov=>ov.addEventListener('click',e=>{if(e.target===ov)closeM(ov.id);}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.overlay.open').forEach(o=>closeM(o.id));});
+function pickSwatch(color){document.getElementById('ntc-col').value=color;document.querySelectorAll('.tc-swatch').forEach(s=>{s.style.outline=s.dataset.c===color?'2px solid #4B3A22':'none';});};
+
+initApp();
+</script>
+
+<!-- ADD TEACHER MODAL -->
+<div class="overlay" id="mo-ntc">
+  <div class="modal" style="width:420px">
+    <div class="m-hd"><h3>Thêm Giáo Viên</h3><button class="x-btn" onclick="closeM('mo-ntc')">×</button></div>
+    <div class="m-bd">
+      <div class="fg"><label class="fl">Họ và tên</label><input type="text" class="fi" id="ntc-nm" placeholder="VD: Nguyễn Thị Lan"></div>
+      <div class="fg"><label class="fl">Mã PIN đăng nhập</label><input type="text" class="fi" id="ntc-pin" placeholder="4–6 chữ số" style="letter-spacing:4px;text-align:center;max-width:160px"></div>
+      <div class="fg">
+        <label class="fl">Màu đại diện</label>
+        <div class="fx ic g2r mt1" style="flex-wrap:wrap">
+          <input type="color" id="ntc-col" value="#A9834A" style="width:36px;height:36px;border:2px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;background:none;flex-shrink:0">
+          <div class="fx g2r" style="flex-wrap:wrap;gap:6px">
+            <div class="tc-swatch" data-c="#A9834A" onclick="pickSwatch('#A9834A')" style="width:26px;height:26px;border-radius:50%;background:#A9834A;cursor:pointer;outline:2px solid #4B3A22;outline-offset:2px"></div>
+            <div class="tc-swatch" data-c="#BE7355" onclick="pickSwatch('#BE7355')" style="width:26px;height:26px;border-radius:50%;background:#BE7355;cursor:pointer"></div>
+            <div class="tc-swatch" data-c="#7C8F5E" onclick="pickSwatch('#7C8F5E')" style="width:26px;height:26px;border-radius:50%;background:#7C8F5E;cursor:pointer"></div>
+            <div class="tc-swatch" data-c="#C08A3E" onclick="pickSwatch('#C08A3E')" style="width:26px;height:26px;border-radius:50%;background:#C08A3E;cursor:pointer"></div>
+            <div class="tc-swatch" data-c="#B85C4A" onclick="pickSwatch('#B85C4A')" style="width:26px;height:26px;border-radius:50%;background:#B85C4A;cursor:pointer"></div>
+            <div class="tc-swatch" data-c="#8B5E3C" onclick="pickSwatch('#8B5E3C')" style="width:26px;height:26px;border-radius:50%;background:#8B5E3C;cursor:pointer"></div>
+            <div class="tc-swatch" data-c="#B5924F" onclick="pickSwatch('#B5924F')" style="width:26px;height:26px;border-radius:50%;background:#B5924F;cursor:pointer"></div>
+            <div class="tc-swatch" data-c="#9C6B4E" onclick="pickSwatch('#9C6B4E')" style="width:26px;height:26px;border-radius:50%;background:#9C6B4E;cursor:pointer"></div>
+          </div>
+        </div>
+        <div class="txs tmu mt1">Hoặc click ô màu bên trái để chọn màu tự do</div>
+      </div>
+    </div>
+    <div class="m-ft"><button class="btn btn-g" onclick="closeM('mo-ntc')">Hủy</button><button class="btn btn-p" onclick="saveNewTc()">Thêm GV</button></div>
+  </div>
+</div>
+
+</body>
+</html>
