@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -40,6 +39,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 .l-btn{width:100%;padding:12px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:.14s}
 .l-btn:hover{background:#8A6836}
 /* SIDEBAR */
+#app{width:100%}
 .sidebar{width:260px;background:#EFE1D0;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
 .s-brand{padding:18px 18px 14px;border-bottom:1px solid rgba(79,62,32,.12)}
 .s-ico{font-size:22px;line-height:1}
@@ -68,10 +68,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .g5{display:grid;grid-template-columns:repeat(5,1fr);gap:11px}
-.sync-badge{font-size:9px;cursor:default;transition:.2s;margin-right:2px}
-.sync-badge.s-online{color:var(--green)}
-.sync-badge.s-saving{color:var(--amber);animation:pulse 1s infinite}
-.sync-badge.s-offline{color:var(--red)}
+.sync-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;cursor:default;transition:.2s;padding:4px 9px;border-radius:20px;letter-spacing:.2px}
+.sync-badge::before{content:'';width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sync-badge.s-online{color:#2E8B4F;background:#E3F3E7}
+.sync-badge.s-online::before{background:#2E8B4F}
+.sync-badge.s-saving{color:#B8860B;background:#FBF0D9;animation:pulse 1s infinite}
+.sync-badge.s-saving::before{background:#B8860B}
+.sync-badge.s-offline{color:#C0392B;background:#FBE4E1}
+.sync-badge.s-offline::before{background:#C0392B}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 #boot-loading{position:fixed;inset:0;background:linear-gradient(135deg,#2E2213,#6B4E2C);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2000;color:#F4EAE0}
 #boot-loading .bl-spin{width:38px;height:38px;border:3px solid rgba(244,234,224,.25);border-top-color:#F4EAE0;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:14px}
@@ -122,6 +126,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 .b-pay-ok{background:var(--g-lt);color:#2A6B35}
 .b-pay-wait{background:var(--a-lt);color:#8A5A20}
 .b-cancel{background:#EDEDED;color:#777}
+.b-trial{background:#EAE3F5;color:#7A5FA8}
 /* SUB-NAV */
 .vnav{display:flex;gap:3px;background:var(--bg);border-radius:7px;padding:3px;margin-bottom:13px}
 .vn-item{padding:6px 12px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);transition:.13s}
@@ -286,7 +291,7 @@ table.tbl tr:hover td{background:var(--g-pl)}
   <div class="topbar">
     <h2 id="pg-ttl">Tổng Quan</h2>
     <div class="tb-r">
-      <span class="sync-badge" id="sync-badge" title="Trạng thái đồng bộ dữ liệu">●</span>
+      <span class="sync-badge" id="sync-badge" title="Trạng thái đồng bộ dữ liệu"></span>
       <select class="sel-sm" id="mo-sel" onchange="upMo()"></select>
       <select class="sel-sm" id="yr-sel" onchange="upMo()"></select>
       <span class="u-badge" id="u-badge"></span>
@@ -393,12 +398,12 @@ table.tbl tr:hover td{background:var(--g-pl)}
         <div id="tc-mgmt"></div>
       </div>
       <div class="card mt4">
-        <div class="c-head"><span class="c-ttl">💡 Hướng dẫn đánh dấu Học Bù</span></div>
+        <div class="c-head"><span class="c-ttl">💡 Hướng dẫn thêm Học Bù / Học Thử vào 1 buổi</span></div>
         <div class="c-body" style="line-height:1.8;font-size:13px">
-          <strong>1.</strong> Mở buổi học mà học viên <em>đến bù</em> (ở bất kỳ ca nào, kể cả ca họ không đăng ký)<br>
-          <strong>2.</strong> Ở mục "Học viên học bù (từ ca khác)", chọn tên học viên trong danh sách và bấm <strong>+ Thêm học bù</strong><br>
-          <strong>3.</strong> Học viên sẽ hiện với nhãn <span class="badge b-bu">🔄 Học bù</span>, mặc định điểm danh "Có mặt"<br>
-          <strong>4.</strong> Lưu điểm danh — buổi này sẽ tự trừ vào gói tập của chính học viên đó như bình thường.
+          <strong>1.</strong> Mở buổi học cần thêm — dùng cho 2 trường hợp: học viên <em>đến bù</em> (ở ca họ không đăng ký), hoặc học viên <strong>Trải nghiệm</strong> đến <em>học thử</em> lần đầu<br>
+          <strong>2.</strong> Ở mục "Học viên ngoài danh sách (học bù / học thử)", chọn tên trong danh sách (học viên Trải nghiệm sẽ có ghi chú 🧪) và bấm <strong>+ Thêm vào buổi</strong><br>
+          <strong>3.</strong> Hệ thống tự nhận diện: học viên Trải nghiệm hiện nhãn <span class="badge b-trial">🧪 Học thử</span>, học viên Chính thức hiện <span class="badge b-bu">🔄 Học bù</span> — mặc định điểm danh "Có mặt"<br>
+          <strong>4.</strong> Lưu điểm danh. Nếu học viên Trải nghiệm chốt học sau buổi thử, vào hồ sơ họ đổi trạng thái sang "Chính thức" rồi thêm gói học phí như bình thường.
         </div>
       </div>
     </div>
@@ -433,7 +438,14 @@ table.tbl tr:hover td{background:var(--g-pl)}
   <div class="m-bd">
     <div class="fg"><label class="fl">Họ và tên</label><input type="text" class="fi" id="ast-nm"></div>
     <div class="fg"><label class="fl">Số điện thoại</label><input type="text" class="fi" id="ast-ph"></div>
-    <div class="fg"><label class="fl">Ca đăng ký</label><div id="ast-cls"></div></div>
+    <div class="fg"><label class="fl">Loại học viên</label>
+      <div class="fx g2r">
+        <button type="button" class="st-btn st-a" id="ast-mt-trial" onclick="setAstType('trial')">🧪 Trải nghiệm</button>
+        <button type="button" class="st-btn st-a" id="ast-mt-official" onclick="setAstType('official')">✅ Chính thức</button>
+      </div>
+      <input type="hidden" id="ast-mt" value="trial">
+      <div class="txs tmu mt1">Chưa cần chọn ca tập ở đây — nếu học viên chốt học, vào hồ sơ họ để thêm gói học phí (sẽ tự đăng ký ca theo gói).</div>
+    </div>
   </div>
   <div class="m-ft"><button class="btn btn-g" onclick="closeM('mo-stu2')">Hủy</button><button class="btn btn-p" onclick="saveNewStu()">Thêm</button></div>
   </div>
@@ -442,7 +454,17 @@ table.tbl tr:hover td{background:var(--g-pl)}
 <div class="overlay" id="mo-pk">
   <div class="modal wide"><div class="m-hd"><h3 id="pk-ttl">Thêm Gói Học Phí</h3><button class="x-btn" onclick="closeM('mo-pk')">×</button></div>
   <div class="m-bd">
-    <div class="fg"><label class="fl">Học viên</label><select class="fs" id="pk-stu"></select></div>
+    <div class="fg"><label class="fl">Học viên</label>
+      <div class="fx g2r mb2">
+        <button type="button" class="st-btn st-a" id="pk-mode-exist" onclick="setPkStuMode('exist')">Học viên có sẵn</button>
+        <button type="button" class="st-btn st-a" id="pk-mode-new" onclick="setPkStuMode('new')">+ Học viên mới</button>
+      </div>
+      <select class="fs" id="pk-stu"></select>
+      <div id="pk-new-stu-wrap" style="display:none">
+        <input type="text" class="fi mb2" id="pk-new-name" placeholder="Họ và tên học viên mới">
+        <input type="text" class="fi" id="pk-new-phone" placeholder="Số điện thoại">
+      </div>
+    </div>
     <div class="g2">
       <div class="fg"><label class="fl">Loại gói</label><select class="fs" id="pk-tp" onchange="togPk()"><option value="sessions">Gói theo buổi</option><option value="monthly">Gói theo tháng</option></select></div>
       <div class="fg"><label class="fl">Trạng thái đóng phí</label><select class="fs" id="pk-pay"><option value="paid">✅ Đã đóng phí</option><option value="processing">🟡 Đang xử lý</option></select></div>
@@ -575,13 +597,14 @@ const DEFAULT={
     {id:3,name:'Thiền & Hơi Thở',days:[6],   time:'09:00',teacherId:3,color:'#7C8F5E',studentIds:[1,5],durationHours:1,hourlyRate:200000}
   ],
   students:[
-    {id:1,name:'Nguyễn Thị Mai',phone:'0901234567',classTypeIds:[1,3],status:'active', statusNote:'',returnDate:''},
-    {id:2,name:'Trần Văn Hùng', phone:'0902345678',classTypeIds:[1],  status:'active', statusNote:'',returnDate:''},
-    {id:3,name:'Lê Thị Lan',    phone:'0903456789',classTypeIds:[2],  status:'paused', statusNote:'Đi du lịch nước ngoài',returnDate:'2026-08-01'},
-    {id:4,name:'Phạm Thu Hà',   phone:'0904567890',classTypeIds:[1,2],status:'active', statusNote:'',returnDate:''},
-    {id:5,name:'Võ Minh Tuấn',  phone:'0905678901',classTypeIds:[3],  status:'active', statusNote:'',returnDate:''},
-    {id:6,name:'Đặng Thị Hồng', phone:'0906789012',classTypeIds:[2],  status:'active', statusNote:'',returnDate:''},
-    {id:7,name:'Bùi Văn Nam',   phone:'0907890123',classTypeIds:[1],  status:'stopped',statusNote:'Bận việc gia đình',returnDate:''}
+    {id:1,name:'Nguyễn Thị Mai',phone:'0901234567',classTypeIds:[1,3],status:'active', statusNote:'',returnDate:'',memberType:'official'},
+    {id:2,name:'Trần Văn Hùng', phone:'0902345678',classTypeIds:[1],  status:'active', statusNote:'',returnDate:'',memberType:'official'},
+    {id:3,name:'Lê Thị Lan',    phone:'0903456789',classTypeIds:[2],  status:'paused', statusNote:'Đi du lịch nước ngoài',returnDate:'2026-08-01',memberType:'official'},
+    {id:4,name:'Phạm Thu Hà',   phone:'0904567890',classTypeIds:[1,2],status:'active', statusNote:'',returnDate:'',memberType:'official'},
+    {id:5,name:'Võ Minh Tuấn',  phone:'0905678901',classTypeIds:[3],  status:'active', statusNote:'',returnDate:'',memberType:'official'},
+    {id:6,name:'Đặng Thị Hồng', phone:'0906789012',classTypeIds:[2],  status:'active', statusNote:'',returnDate:'',memberType:'official'},
+    {id:7,name:'Bùi Văn Nam',   phone:'0907890123',classTypeIds:[1],  status:'stopped',statusNote:'Bận việc gia đình',returnDate:'',memberType:'official'},
+    {id:8,name:'Ngọc Anh (thử lớp)',phone:'0909112233',classTypeIds:[],status:'active', statusNote:'',returnDate:'',memberType:'trial'}
   ],
   packages:[
     {id:1,studentId:1,type:'sessions',total:20,months:null,start:'2026-06-01',end:'2026-09-01', paid:'2026-06-01',amount:2000000,payStatus:'paid',notes:'',exts:[],schedule:[{ctId:1,day:1},{ctId:1,day:3},{ctId:3,day:6}]},
@@ -649,13 +672,28 @@ try{sb=window.supabase?.createClient(SB_URL,SB_KEY)||null;}catch{sb=null;}
 function setSyncBadge(state){
   const el=document.getElementById('sync-badge');if(!el)return;
   el.className='sync-badge s-'+state;
-  const titles={online:'Đã đồng bộ với Supabase',saving:'Đang lưu...',offline:'Mất kết nối — đang lưu tạm trên máy này'};
+  const labels={online:'Đã đồng bộ',saving:'Đang lưu...',offline:'Mất kết nối'};
+  const titles={online:'Dữ liệu đã lưu lên Supabase — mọi người đang thấy chung 1 dữ liệu',saving:'Đang lưu lên Supabase...',offline:'Không kết nối được Supabase — bấm để xem chi tiết lỗi'};
+  el.textContent=labels[state]||'';
   el.title=titles[state]||'';
+  el.style.cursor=state==='offline'?'pointer':'default';
+  el.onclick=state==='offline'?(()=>alert('Lỗi kết nối Supabase:\n\n'+(lastSbErr||'Không rõ nguyên nhân')+'\n\nDữ liệu vẫn đang được lưu tạm trên máy này, sẽ tự đồng bộ lại khi kết nối được.')):null;
 }
 
+// In lỗi Supabase dễ đọc (thay vì [object Object] mù mờ trên console)
+function sbErrText(err){
+  try{
+    const parts=[err?.message,err?.details,err?.hint,err?.code].filter(Boolean);
+    return parts.length?parts.join(' | '):JSON.stringify(err);
+  }catch{return String(err);}
+}
+let lastSbErr='';
 async function loadD(){
   if(!sb){
-    // Không có Supabase (lỗi cấu hình) -> dùng localStorage như cũ để app vẫn chạy được
+    // Không load được thư viện Supabase (chặn mạng/CDN lỗi) -> dùng localStorage tạm để app vẫn chạy được
+    lastSbErr='Không load được thư viện Supabase (script CDN bị chặn hoặc mất mạng)';
+    console.error(lastSbErr);
+    setSyncBadge('offline');
     try{const s=localStorage.getItem(DATA_KEY);if(s){D=JSON.parse(s);migrateD();return;}}catch{}
     D=JSON.parse(JSON.stringify(DEFAULT));saveD();return;
   }
@@ -672,7 +710,8 @@ async function loadD(){
     setSyncBadge('online');
     subscribeRealtime();
   }catch(err){
-    console.error('Supabase load lỗi, dùng dữ liệu tạm trên máy:',err);
+    lastSbErr=sbErrText(err);
+    console.error('Supabase load lỗi, dùng dữ liệu tạm trên máy:',lastSbErr,err);
     try{const s=localStorage.getItem(DATA_KEY);D=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT));}catch{D=JSON.parse(JSON.stringify(DEFAULT));}
     migrateD();
     setSyncBadge('offline');
@@ -695,6 +734,9 @@ function migrateD(){
     if(p.schedule===undefined){p.schedule=[];ch=true;}
     if(p.type==='sessions'&&!p.end){const sd=new Date(p.start);p.end=dStr(new Date(sd.getFullYear(),sd.getMonth()+3,sd.getDate()));ch=true;}
   });
+  D.students.forEach(s=>{
+    if(s.memberType===undefined){s.memberType='official';ch=true;}
+  });
   if(ch)saveD();
 }
 // Lưu ngay: cập nhật cache local tức thì (mượt, không chờ mạng) + đẩy lên Supabase (debounce ~500ms)
@@ -713,7 +755,8 @@ async function sbPush(){
     if(error)throw error;
     setSyncBadge('online');
   }catch(err){
-    console.error('Supabase lưu lỗi:',err);
+    lastSbErr=sbErrText(err);
+    console.error('Supabase lưu lỗi:',lastSbErr,err);
     setSyncBadge('offline');
   }
 }
@@ -1024,9 +1067,9 @@ function openSess(sid){
     else{const nm=s.guestTeacher||GT(s.teacherId)?.name||'—',col=s.guestTeacher?'var(--muted)':(GT(s.teacherId)?.color||'#999');bd+=`<div class="mb2 tsm">GV: <span class="badge" style="background:${col}18;color:${col}">${nm}${s.guestTeacher?' · thuê ngoài':''}</span></div>`;}
     bd+=`<div class="sep"></div><div class="txs fb tmu" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px">Điểm danh (học viên đăng ký ca này)</div>`;
     bd+=`<div id="att-rows">${renderRosterRows(en,ce)}</div>`;
-    bd+=`<div class="sep"></div><div class="txs fb tmu" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px">🔄 Học viên học bù (từ ca khác)</div>`;
+    bd+=`<div class="sep"></div><div class="txs fb tmu" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px">🔄 Học viên ngoài danh sách (học bù / học thử)</div>`;
     bd+=`<div id="guest-rows">${renderGuestRows(en,ce)}</div>`;
-    if(ce)bd+=`<div class="fx g2r ic mt2" style="flex-wrap:wrap"><select class="fs" id="guest-pick" style="max-width:220px;flex:1"></select><button class="btn btn-g btn-sm" onclick="addGuestAtt()">+ Thêm học bù</button></div>`;
+    if(ce)bd+=`<div class="fx g2r ic mt2" style="flex-wrap:wrap"><select class="fs" id="guest-pick" style="max-width:220px;flex:1"></select><button class="btn btn-g btn-sm" onclick="addGuestAtt()">+ Thêm vào buổi</button></div>`;
     if(isAdmin())bd+=`<div class="cz" id="cz"><div class="fs6 mb2" style="color:var(--red)">🚫 Huỷ buổi học này</div><div class="fg"><label class="fl">Lý do huỷ</label><input type="text" class="fi" id="cz-note" placeholder="Giáo viên bị ốm..."></div><label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer;margin-bottom:10px"><input type="checkbox" id="cz-comp" checked><span>Tự động <strong>+1 buổi</strong> vào thẻ học viên đăng ký ca này (không áp dụng cho học viên học bù)</span></label><button class="btn btn-r btn-sm" onclick="doCancel()">✓ Xác nhận Huỷ</button></div>`;
   }
   document.getElementById('ms-bd').innerHTML=bd;
@@ -1042,13 +1085,13 @@ function renderRosterRows(en,ce){
 }
 function renderGuestRows(en,ce){
   const gids=Object.keys(tempAtt).map(Number).filter(id=>!en.includes(id));
-  if(!gids.length)return'<p class="tmu tsm">Chưa có học viên học bù trong buổi này.</p>';
+  if(!gids.length)return'<p class="tmu tsm">Chưa có học viên bù/thử trong buổi này.</p>';
   return gids.map(id=>{const st=GS(id);if(!st)return'';return attRowH(id,st.name,tempAtt[id],ce,true);}).join('');
 }
 function refreshGuestPicker(en){
   const gp=document.getElementById('guest-pick');if(!gp)return;
   const avail=D.students.filter(st=>!en.includes(st.id)&&!tempAtt[st.id]);
-  gp.innerHTML=avail.length?avail.map(st=>`<option value="${st.id}">${st.name}</option>`).join(''):'<option value="">— Không còn học viên —</option>';
+  gp.innerHTML=avail.length?avail.map(st=>`<option value="${st.id}">${st.name}${st.memberType==='trial'?' — 🧪 Trải nghiệm':''}</option>`).join(''):'<option value="">— Không còn học viên —</option>';
   const btn=gp.nextElementSibling;if(btn)btn.disabled=!avail.length;
 }
 function refreshAttUI(){
@@ -1065,7 +1108,8 @@ function addGuestAtt(){
 function removeGuestAtt(sid){delete tempAtt[sid];refreshAttUI();}
 function attRowH(sid,name,att,ed,guest){
   const ok=att.st==='present',ab=att.st==='absent',bu=att.st==='makeup';
-  const guestTag=guest?'<span class="badge b-bu" style="margin-left:4px">🔄 Học bù</span>':'';
+  const isTrial=guest&&GS(sid)?.memberType==='trial';
+  const guestTag=guest?(isTrial?'<span class="badge b-trial" style="margin-left:4px">🧪 Học thử</span>':'<span class="badge b-bu" style="margin-left:4px">🔄 Học bù</span>'):'';
   let btns='';
   if(ed){
     const opts=[['present','✓ Có','a-ok'],['absent','✗ Vắng','a-abs']];
@@ -1225,7 +1269,9 @@ function renderStudents(){
   document.getElementById('stu-list').innerHTML=list.length?list.map(s=>{
     const pkg=actPkg(s.id),st=pkgSt(pkg),cls=s.classTypeIds.map(id=>GC(id)?.name).filter(Boolean).join(' · ');
     const stB=s.status!=='active'?`<span class="badge ${s.status==='paused'?'b-pause':'b-stop'} tsm">${s.status==='paused'?'🟡 Tạm nghỉ':'🔴 Đã nghỉ'}</span>`:'';
-    return`<div class="s-row" onclick="openStuM(${s.id})">${avi(s.name,35,12)}<div style="flex:1"><div class="fs6">${s.name} ${stB}</div><div class="tsm tmu mt1">${s.phone}${cls?' · '+cls:''}</div>${s.statusNote?`<div class="txs tmu">📝 ${s.statusNote}</div>`:''}</div><span class="badge ${st.cls}">${st.lbl}</span><span class="tmu" style="padding-left:6px">›</span></div>`;
+    const mtB=s.memberType==='trial'?'<span class="badge b-trial tsm">🧪 Trải nghiệm</span>':'';
+    const attB=pkg&&pkg.type==='sessions'?`<div class="txs tmu mt1">📋 Điểm danh: <strong>${pkgUsed(pkg)}/${pkg.total}</strong> buổi</div>`:'';
+    return`<div class="s-row" onclick="openStuM(${s.id})">${avi(s.name,35,12)}<div style="flex:1"><div class="fs6">${s.name} ${mtB} ${stB}</div><div class="tsm tmu mt1">${s.phone}${cls?' · '+cls:''}</div>${attB}${s.statusNote?`<div class="txs tmu">📝 ${s.statusNote}</div>`:''}</div><span class="badge ${st.cls}">${st.lbl}</span><span class="tmu" style="padding-left:6px">›</span></div>`;
   }).join(''):'<p class="tmu tsm" style="padding:13px">Không có học viên nào.</p>';
 }
 function openStuM(sid){
@@ -1246,7 +1292,8 @@ function openStuM(sid){
   // Lịch sử điểm danh: bao gồm cả buổi ở ca đăng ký lẫn buổi học bù ở ca khác
   const hs=D.sessions.filter(se=>se.date<=TODAY&&se.att.some(a=>a.sid===sid)).sort((a,b)=>b.date.localeCompare(a.date));
   let tp=0;
-  const hH=hs.length?`<div style="border:1px solid var(--border);border-radius:7px;overflow:hidden;max-height:220px;overflow-y:auto">${hs.map(se=>{const att=se.att.find(a=>a.sid===sid),ct=GC(se.ctId);let bg='<span class="badge b-dim">Chưa đ/danh</span>';if(att?.st==='present'){bg='<span class="badge b-ok">✓ Có mặt</span>';tp++;}else if(att?.st==='absent')bg='<span class="badge b-red">✗ Vắng</span>';else if(att?.st==='makeup'){bg=`<span class="badge b-bu">🔄 Bù${att.mfor?' (từ '+fd(att.mfor)+')':''}</span>`;tp++;}const gTag=att?.guest?'<span class="badge b-bu txs" style="margin-left:3px">Học bù</span>':'';return`<div class="ah-row"><span class="tmu" style="width:80px;flex-shrink:0">${fd(se.date)}</span><span style="flex:1;color:${ct?.color};font-weight:600">${ct?.name}${gTag}</span>${bg}${se.cancelled?'<span class="badge b-red txs">Huỷ</span>':''}</div>`;}).join('')}</div>`:'<p class="tmu tsm mt1">Chưa có buổi nào đã qua.</p>';
+  const isTrialStu=GS(sid)?.memberType==='trial';
+  const hH=hs.length?`<div style="border:1px solid var(--border);border-radius:7px;overflow:hidden;max-height:220px;overflow-y:auto">${hs.map(se=>{const att=se.att.find(a=>a.sid===sid),ct=GC(se.ctId);let bg='<span class="badge b-dim">Chưa đ/danh</span>';if(att?.st==='present'){bg='<span class="badge b-ok">✓ Có mặt</span>';tp++;}else if(att?.st==='absent')bg='<span class="badge b-red">✗ Vắng</span>';else if(att?.st==='makeup'){bg=`<span class="badge b-bu">🔄 Bù${att.mfor?' (từ '+fd(att.mfor)+')':''}</span>`;tp++;}const gTag=att?.guest?(isTrialStu?'<span class="badge b-trial txs" style="margin-left:3px">🧪 Học thử</span>':'<span class="badge b-bu txs" style="margin-left:3px">Học bù</span>'):'';return`<div class="ah-row"><span class="tmu" style="width:80px;flex-shrink:0">${fd(se.date)}</span><span style="flex:1;color:${ct?.color};font-weight:600">${ct?.name}${gTag}</span>${bg}${se.cancelled?'<span class="badge b-red txs">Huỷ</span>':''}</div>`;}).join('')}</div>`:'<p class="tmu tsm mt1">Chưa có buổi nào đã qua.</p>';
   // Toàn bộ lịch sử gói phí (mọi lần đóng/gia hạn từ trước tới nay)
   const allPkgs=D.packages.filter(p=>p.studentId===sid).sort((a,b)=>b.start.localeCompare(a.start));
   const totalPaid=allPkgs.reduce((t,p)=>t+(p.amount||0),0);
@@ -1257,15 +1304,18 @@ function openStuM(sid){
     return`<div class="pkg" style="margin-bottom:7px;${isCur?'border-color:var(--green)':''}"><div class="fx jb" style="align-items:flex-start"><div><div class="fs6 tsm">${det}${isCur?' <span class="badge b-ok txs">Hiện tại</span>':''}</div><div class="txs tmu mt1">${fd(p.start)} → ${fd(p.end)}</div><div class="txs tmu">Đóng tiền: ${fd(p.paid)}</div>${p.notes?`<div class="txs tmu">📝 ${p.notes}</div>`:''}</div><div style="text-align:right;flex-shrink:0;margin-left:8px"><div class="amount" style="font-size:14px">${fv(p.amount)}</div><div class="mt1">${ppay}</div><div class="mt1"><span class="badge ${pst.cls} txs">${pst.lbl}</span></div><button class="btn btn-g btn-sm mt1" onclick="closeM('mo-stu');openEditPkg(${p.id})">✏️ Sửa</button></div></div></div>`;
   }).join(''):'<p class="tmu tsm">Chưa từng mua gói nào.</p>';
   const stSel=`<div class="fx g2r mb2"><button class="st-btn st-a ${s.status==='active'?'on-a':''}" onclick="selSSt('active')">🟢 Đang học</button><button class="st-btn st-p ${s.status==='paused'?'on-p':''}" onclick="selSSt('paused')">🟡 Tạm nghỉ</button><button class="st-btn st-s ${s.status==='stopped'?'on-s':''}" onclick="selSSt('stopped')">🔴 Đã nghỉ</button></div><div id="st-na" style="${s.status!=='active'?'':'display:none'}"><input type="text" class="fi mb2" id="st-note" value="${s.statusNote||''}" placeholder="Ghi chú lý do..."><div class="fg"><label class="fl">Ngày dự kiến quay lại</label><input type="date" class="fi" id="st-ret" value="${s.returnDate||''}"></div></div><button class="btn btn-p btn-sm mt2" onclick="saveStuSt()">Lưu trạng thái</button>`;
+  const mtSel=`<div class="fx g2r mb2"><button class="st-btn st-a ${s.memberType==='trial'?'on-a':''}" onclick="setStuMemberType(${sid},'trial')">🧪 Trải nghiệm</button><button class="st-btn st-a ${s.memberType==='official'?'on-a':''}" onclick="setStuMemberType(${sid},'official')">✅ Chính thức</button></div><div class="txs tmu">Học viên chốt học → chuyển "Chính thức" rồi bấm "+ Gia hạn / Thêm gói mới" ở trên.</div>`;
   document.getElementById('mstu-ttl').textContent=s.name;
   document.getElementById('mstu-bd').innerHTML=`
-    <div class="fx g3r ic mb3">${avi(s.name,48,17)}<div><div class="fb" style="font-size:17px">${s.name}</div><div class="tsm tmu">${s.phone}</div><div class="mt1">${clsB||'<span class="tmu tsm">Chưa đăng ký ca</span>'}</div></div></div>
+    <div class="fx g3r ic mb3">${avi(s.name,48,17)}<div><div class="fb" style="font-size:17px">${s.name} ${s.memberType==='trial'?'<span class="badge b-trial txs">🧪 Trải nghiệm</span>':''}</div><div class="tsm tmu">${s.phone}</div><div class="mt1">${clsB||'<span class="tmu tsm">Chưa đăng ký ca</span>'}</div></div></div>
     <div class="g4 mb3">
       <div class="stat" style="padding:10px 11px"><div class="s-lbl">Buổi đã học</div><div class="s-val" style="font-size:18px">${tp}</div><div class="s-sub">từ trước tới nay</div></div>
       <div class="stat" style="padding:10px 11px"><div class="s-lbl">Số gói đã mua</div><div class="s-val" style="font-size:18px">${allPkgs.length}</div></div>
       <div class="stat" style="padding:10px 11px"><div class="s-lbl">Tổng đã đóng</div><div class="s-val" style="font-size:15px">${fv(totalPaid)}</div></div>
       <div class="stat" style="padding:10px 11px"><div class="s-lbl">Gói hiện tại</div><div class="mt1"><span class="badge ${st.cls}">${st.lbl}</span>${payB}</div></div>
     </div>
+    <div class="txs fb tmu" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Loại học viên</div>${mtSel}
+    <div class="sep"></div>
     <div class="txs fb tmu" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Gói học phí hiện tại</div>${pkgH}
     <div class="fx g2r mt2"><button class="btn btn-p btn-sm" onclick="openAddPkg(${sid})">+ Gia hạn / Thêm gói mới</button></div>
     <div class="sep"></div>
@@ -1274,6 +1324,10 @@ function openStuM(sid){
     <div class="sep"></div><div class="txs fb tmu" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Lịch sử điểm danh</div>${hH}
     <div class="sep"></div><div class="txs fb tmu" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px">Trạng thái học</div>${stSel}`;
   openM('mo-stu');
+}
+function setStuMemberType(sid,mt){
+  const s=GS(sid);if(!s)return;
+  s.memberType=mt;saveD();openStuM(sid);
 }
 function selSSt(st){
   pendingStuSt=st;
@@ -1406,27 +1460,41 @@ function saveNewSess(){
 }
 function openAddStu(){
   document.getElementById('ast-nm').value='';document.getElementById('ast-ph').value='';
-  document.getElementById('ast-cls').innerHTML=D.classTypes.map(ct=>`<label style="display:flex;align-items:center;gap:7px;margin-bottom:7px;cursor:pointer;font-size:13px"><input type="checkbox" value="${ct.id}"><span class="dot" style="background:${ct.color}"></span>${ct.name}</label>`).join('');
+  setAstType('trial');
   openM('mo-stu2');
+}
+function setAstType(t){
+  document.getElementById('ast-mt').value=t;
+  document.getElementById('ast-mt-trial').classList.toggle('on-a',t==='trial');
+  document.getElementById('ast-mt-official').classList.toggle('on-a',t==='official');
 }
 function saveNewStu(){
   const name=document.getElementById('ast-nm').value.trim();if(!name){alert('Vui lòng nhập tên.');return;}
-  const ctIds=[...document.querySelectorAll('#ast-cls input:checked')].map(el=>parseInt(el.value));
+  const memberType=document.getElementById('ast-mt').value||'trial';
   const nid=Math.max(...D.students.map(s=>s.id),0)+1;
-  D.students.push({id:nid,name,phone:document.getElementById('ast-ph').value.trim(),classTypeIds:ctIds,status:'active',statusNote:'',returnDate:''});
-  ctIds.forEach(cid=>{const ct=GC(cid);if(ct&&!ct.studentIds.includes(nid))ct.studentIds.push(nid);});
+  D.students.push({id:nid,name,phone:document.getElementById('ast-ph').value.trim(),classTypeIds:[],status:'active',statusNote:'',returnDate:'',memberType});
   saveD();closeM('mo-stu2');renderStudents();
 }
 let pkFreqN=0;
 function openAddPkg(preId){
-  document.getElementById('pk-stu').innerHTML=D.students.map(s=>`<option value="${s.id}" ${s.id===preId?'selected':''}>${s.name}</option>`).join('');
+  document.getElementById('pk-stu').innerHTML=D.students.map(s=>`<option value="${s.id}" ${s.id===preId?'selected':''}>${s.name}${s.memberType==='trial'?' (Trải nghiệm)':''}</option>`).join('');
   document.getElementById('pk-tp').value='sessions';
   document.getElementById('pk-pay').value='paid';
   document.getElementById('pk-sess').value='10';document.getElementById('pk-mon').value='1';
   document.getElementById('pk-st').value=TODAY;document.getElementById('pk-pd').value=TODAY;
   document.getElementById('pk-amt').value='';document.getElementById('pk-nt').value='';
+  document.getElementById('pk-new-name').value='';document.getElementById('pk-new-phone').value='';
   pkFreqN=0;document.getElementById('pk-f2').classList.remove('on-a');document.getElementById('pk-f3').classList.remove('on-a');
+  setPkStuMode(preId?'exist':'exist');
   togPk();renderPkSchedRows();openM('mo-pk');
+}
+let pkStuMode='exist';
+function setPkStuMode(m){
+  pkStuMode=m;
+  document.getElementById('pk-mode-exist').classList.toggle('on-a',m==='exist');
+  document.getElementById('pk-mode-new').classList.toggle('on-a',m==='new');
+  document.getElementById('pk-stu').style.display=m==='exist'?'':'none';
+  document.getElementById('pk-new-stu-wrap').style.display=m==='new'?'':'none';
 }
 function togPk(){
   const t=document.getElementById('pk-tp').value;
@@ -1467,7 +1535,17 @@ function pkSchDayOpts(i){
   daySel.innerHTML=(ct?.days||[]).map(d=>`<option value="${d}">${DOW_LBL[d]}</option>`).join('');
 }
 function savePkg(){
-  const sid=parseInt(document.getElementById('pk-stu').value),type=document.getElementById('pk-tp').value;
+  let sid;
+  if(pkStuMode==='new'){
+    const nm=document.getElementById('pk-new-name').value.trim();
+    if(!nm){alert('Vui lòng nhập tên học viên mới.');return;}
+    sid=Math.max(...D.students.map(s=>s.id),0)+1;
+    D.students.push({id:sid,name:nm,phone:document.getElementById('pk-new-phone').value.trim(),classTypeIds:[],status:'active',statusNote:'',returnDate:'',memberType:'official'});
+  }else{
+    sid=parseInt(document.getElementById('pk-stu').value);
+    if(!sid){alert('Vui lòng chọn học viên.');return;}
+  }
+  const type=document.getElementById('pk-tp').value;
   const start=document.getElementById('pk-st').value,paid=document.getElementById('pk-pd').value,end=document.getElementById('pk-end').value;
   if(!end){alert('Vui lòng nhập ngày hết hạn gói (bắt buộc).');return;}
   const amount=rawMoney('pk-amt');
@@ -1482,7 +1560,7 @@ function savePkg(){
   }
   D.packages.push({id:Math.max(...D.packages.map(p=>p.id),0)+1,studentId:sid,type,total,months,start,end,paid,amount,payStatus,notes:document.getElementById('pk-nt').value.trim(),exts:[],schedule});
   schedule.forEach(sc=>{const ct=GC(sc.ctId);if(ct&&!ct.studentIds.includes(sid))ct.studentIds.push(sid);});
-  const stu=GS(sid);if(stu)schedule.forEach(sc=>{if(!stu.classTypeIds.includes(sc.ctId))stu.classTypeIds.push(sc.ctId);});
+  const stu=GS(sid);if(stu){if(stu.memberType==='trial')stu.memberType='official';schedule.forEach(sc=>{if(!stu.classTypeIds.includes(sc.ctId))stu.classTypeIds.push(sc.ctId);});}
   saveD();closeM('mo-pk');renderTab(currentTab);
 }
 
