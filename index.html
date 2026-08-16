@@ -241,6 +241,52 @@ table.tbl tr:hover td{background:var(--g-pl)}
 .sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .sec-hd h3{font-size:14px;font-weight:700}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ===== HAMBURGER + SIDEBAR OVERLAY (mobile) ===== */
+.hamburger{display:none;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text);padding:2px 8px 2px 0;flex-shrink:0}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(30,20,10,.45);z-index:590}
+.sidebar-overlay.show{display:block}
+
+/* ===== RESPONSIVE (tablet & mobile) ===== */
+@media (max-width:860px){
+  body{overflow:auto;height:auto;min-height:100vh}
+  #app{display:flex !important}
+  .sidebar{position:fixed;top:0;left:0;height:100vh;z-index:600;width:250px;
+    transform:translateX(-105%);transition:transform .22s ease;box-shadow:0 0 30px rgba(0,0,0,.25)}
+  .sidebar.open{transform:translateX(0)}
+  .main{width:100%;min-width:0}
+  .hamburger{display:block}
+  .topbar{flex-wrap:wrap;padding:10px 14px;gap:6px}
+  .topbar h2{font-size:16px;flex:1;min-width:0}
+  .tb-r{flex-wrap:wrap;gap:5px;width:100%;justify-content:flex-start}
+  .content{padding:14px}
+  .g2,.g3,.g4,.g5{grid-template-columns:1fr 1fr;gap:8px}
+  .stat{padding:10px !important}
+  .s-val{font-size:16px !important}
+  .s-lbl{font-size:10px !important}
+  .modal{width:94vw !important;max-height:88vh}
+  .m-bd{padding:16px !important}
+  .lbox{width:92vw !important;padding:28px 18px !important}
+  .l-title{font-size:38px !important}
+  .l-logo img{width:100px !important}
+  .tbl{display:block;overflow-x:auto;white-space:nowrap}
+  #tc-tbl,#tc-mgmt{overflow-x:auto}
+  .cal-grid{overflow-x:auto}
+  .c-dow,.cal-body{min-width:640px}
+  .att-mx table{font-size:11px}
+  .c-block{overflow-x:auto}
+  .cb-hd{flex-wrap:wrap}
+  .pkg{padding:12px !important}
+  .sec-hd{flex-wrap:wrap;gap:8px}
+}
+@media (max-width:480px){
+  .g2,.g3,.g4,.g5{grid-template-columns:1fr}
+  .l-title{font-size:30px !important}
+  .lbox{padding:22px 14px !important}
+  .l-logo img{width:80px !important}
+  .modal{width:96vw !important}
+  .content{padding:10px}
+}
 </style>
 </head>
 <body>
@@ -265,6 +311,10 @@ table.tbl tr:hover td{background:var(--g-pl)}
         <label class="l-lbl">Mã PIN</label>
         <input type="password" class="l-pin" id="l-pin" maxlength="6" onkeydown="if(event.key==='Enter')doLogin()" placeholder="• • • •">
       </div>
+      <div id="l-guest" style="display:none">
+        <label class="l-lbl">Tên của bạn (theo lịch đã được xếp)</label>
+        <input type="text" class="l-pin" id="l-guest-name" style="letter-spacing:normal;text-align:left;font-size:15px" onkeydown="if(event.key==='Enter')doLogin()" placeholder="VD: Cô Trang">
+      </div>
       <div class="l-err" id="l-err"></div>
       <button class="l-btn" onclick="doLogin()">Đăng nhập →</button>
     </div>
@@ -285,10 +335,12 @@ table.tbl tr:hover td{background:var(--g-pl)}
     <div class="n-item" data-tab="expenses"><span class="n-ico">🧾</span>Chi Phí</div>
     <div class="n-item" data-tab="settings"><span class="n-ico">⚙️</span>Cài Đặt</div>
   </nav>
-  <div class="s-foot">Nhà Bè · HCM</div>
+  <div class="s-foot">Nhà Bè · HCM<br>Bản cập nhật: 16/08/2026 21:20</div>
 </aside>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 <div class="main">
   <div class="topbar">
+    <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()">☰</button>
     <h2 id="pg-ttl">Tổng Quan</h2>
     <div class="tb-r">
       <span class="sync-badge" id="sync-badge" title="Trạng thái đồng bộ dữ liệu"></span>
@@ -316,7 +368,8 @@ table.tbl tr:hover td{background:var(--g-pl)}
         <button class="ico-btn" onclick="stepMo(-1)">‹</button>
         <h3 id="cal-lbl"></h3>
         <button class="ico-btn" onclick="stepMo(1)">›</button>
-        <button class="btn btn-p btn-sm" style="margin-left:auto" id="btn-add-sess" onclick="openAddSess()">+ Thêm buổi</button>
+        <span class="badge b-ok" id="cal-my-count" style="margin-left:auto;display:none"></span>
+        <button class="btn btn-p btn-sm" id="btn-add-sess" style="margin-left:auto" onclick="openAddSess()">+ Thêm buổi</button>
       </div>
       <div class="cal-grid">
         <div class="c-dow"><div>T2</div><div>T3</div><div>T4</div><div>T5</div><div>T6</div><div>T7</div><div>CN</div></div>
@@ -332,6 +385,7 @@ table.tbl tr:hover td{background:var(--g-pl)}
           <div class="vn-item" onclick="setCV('summary')">📊 Tóm tắt</div>
           <div class="vn-item active" onclick="setCV('matrix')">📋 Điểm danh tháng</div>
         </div>
+        <span class="badge b-ok" id="cls-my-count" style="margin-right:8px;display:none"></span>
         <button class="btn btn-p btn-sm" id="btn-add-ct" onclick="openAddCt()">+ Thêm ca tập</button>
       </div>
       <div id="cls-list"></div>
@@ -339,6 +393,10 @@ table.tbl tr:hover td{background:var(--g-pl)}
 
     <!-- TEACHERS -->
     <div id="panel-teachers" class="panel">
+      <div class="sec-hd">
+        <h3>Danh sách &amp; hiệu suất giáo viên</h3>
+        <button class="btn btn-p btn-sm" id="btn-add-tc-shortcut" onclick="openAddTc()">+ Thêm GV</button>
+      </div>
       <div class="g2" id="tc-grid"></div>
       <div class="card mt4"><div class="c-head"><span class="c-ttl" id="tc-tbl-ttl">Tất cả buổi học</span></div><div id="tc-tbl"></div></div>
     </div>
@@ -534,7 +592,7 @@ table.tbl tr:hover td{background:var(--g-pl)}
     </div>
     <div class="a-warn txs">💡 Lương/giờ áp dụng để tính lương GV hàng tháng trong mục "Chi Phí". Đổi số này sẽ tính lại cho mọi buổi (kể cả buổi cũ) theo mức mới nhất.</div>
   </div>
-  <div class="m-ft"><button class="btn btn-g" onclick="closeM('mo-ecte')">Hủy</button><button class="btn btn-p" onclick="saveEditCt()">Lưu thay đổi</button></div>
+  <div class="m-ft"><button class="btn btn-r btn-sm" onclick="deleteCt()">🗑️ Xoá ca tập</button><span style="flex:1"></span><button class="btn btn-g" onclick="closeM('mo-ecte')">Hủy</button><button class="btn btn-p" onclick="saveEditCt()">Lưu thay đổi</button></div>
   </div>
 </div>
 
@@ -655,10 +713,11 @@ const DEFAULT={
   ]
 };
 
-let D,viewMonth=new Date(2026,6,1),currentTab='overview';
+const todayD=new Date();
+let D,viewMonth=new Date(todayD.getFullYear(),todayD.getMonth(),1),currentTab='overview';
 let editSessId=null,tempAtt={},classView='matrix',stuFilter='active';
 let editStuId=null,pendingStuSt=null;
-const TODAY='2026-07-11',todayD=new Date(2026,6,11);
+const TODAY=dStr(todayD);
 const VI_MO=['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
 const AUTH_KEY='ygs_auth_v2',DATA_KEY='ygs_v3';
 
@@ -851,9 +910,8 @@ function teacherSalaryDetail(tid,mo,yr){
   return{rows,total};
 }
 function allTeacherSalaryTotal(mo,yr){return D.teachers.reduce((s,t)=>s+teacherSalaryDetail(t.id,mo,yr).total,0)+guestSalaryTotal(mo,yr);}
-// Lương GV thuê ngoài (không có tài khoản trong hệ thống) — gộp theo tên đã nhập tay ở từng buổi
-// Lương GV thuê ngoài (không có tài khoản trong hệ thống) — gộp theo tên đã nhập tay ở từng buổi
-// Mỗi buổi thuê ngoài có thể có mức lương riêng (guestAmount), không nhất thiết theo giá gốc của ca
+// Lương GV dạy thay (không có tài khoản trong hệ thống) — gộp theo tên đã nhập tay ở từng buổi
+// Mỗi buổi GV dạy thay có thể có mức lương riêng (guestAmount), không nhất thiết theo giá gốc của ca
 function guestSalaryDetail(mo,yr){
   const ms=moSess(mo,yr).filter(s=>!s.cancelled&&s.att&&s.att.length>0&&s.guestTeacher);
   const groups={};
@@ -923,8 +981,18 @@ function setAuth(a){localStorage.setItem(AUTH_KEY,JSON.stringify(a));}
 function clearAuth(){localStorage.removeItem(AUTH_KEY);}
 function isAdmin(){return getAuth()?.type==='admin';}
 function isTc(){return getAuth()?.type==='teacher';}
+function isGuestT(){return getAuth()?.type==='guest';}
 function curTid(){return getAuth()?.teacherId;}
-function canEdit(s){return isAdmin()||(isTc()&&s.teacherId===curTid());}
+function curGuestName(){return(getAuth()?.guestName||'').trim().toLowerCase();}
+function canEdit(s){return isAdmin()||(isTc()&&s.teacherId===curTid())||(isGuestT()&&s.guestTeacher&&s.guestTeacher.trim().toLowerCase()===curGuestName());}
+// Chặn xem thông tin nhạy cảm (hồ sơ HV: tiền, SĐT...) — GV/GV dạy thay phải nhập đúng PIN Admin mới xem được
+function requireAdminPin(actionFn){
+  if(isAdmin()){actionFn();return;}
+  const pin=prompt('Thông tin này cần quyền Admin.\nNhập mã PIN Admin để xem:');
+  if(pin===null)return;
+  if(pin===(D.settings?.adminPin||atob('MTIzNA=='))){actionFn();}
+  else alert('PIN không đúng.');
+}
 
 async function initApp(){
   await loadD();
@@ -935,20 +1003,31 @@ async function initApp(){
 function buildLoginDD(){
   let o='<option value="">— Chọn tài khoản —</option><option value="admin">🔐 Quản trị viên</option>';
   D.teachers.forEach(t=>{o+=`<option value="${t.id}">🌿 ${t.name}</option>`;});
+  o+='<option value="guest">🔗 GV Dạy Thay (Guest Instructor)</option>';
   document.getElementById('l-user').innerHTML=o;
 }
 function onUser(){
   const v=document.getElementById('l-user').value;
   document.getElementById('l-pin').value='';document.getElementById('l-err').textContent='';
-  const hw=document.getElementById('l-pw'),hh=document.getElementById('l-hint');
-  if(!v){hw.style.display='none';hh.className='l-hint';return;}
-  hw.style.display='block';document.getElementById('l-pin').focus();
+  const g=document.getElementById('l-guest-name');if(g)g.value='';
+  const hw=document.getElementById('l-pw'),hh=document.getElementById('l-hint'),gw=document.getElementById('l-guest');
+  if(!v){hw.style.display='none';gw.style.display='none';hh.className='l-hint';return;}
+  if(v==='guest'){hw.style.display='none';gw.style.display='block';hh.className='l-hint';document.getElementById('l-guest-name').focus();return;}
+  gw.style.display='none';hw.style.display='block';document.getElementById('l-pin').focus();
   hh.className='l-hint';
 }
 function doLogin(){
-  const v=document.getElementById('l-user').value,pin=document.getElementById('l-pin').value;
+  const v=document.getElementById('l-user').value;
   const err=document.getElementById('l-err');
   if(!v){err.textContent='Vui lòng chọn tài khoản.';return;}
+  if(v==='guest'){
+    const nm=document.getElementById('l-guest-name').value.trim();
+    if(!nm){err.textContent='Vui lòng nhập tên của bạn.';return;}
+    const has=D.sessions.some(s=>s.guestTeacher&&s.guestTeacher.trim().toLowerCase()===nm.toLowerCase());
+    if(!has){err.textContent='Không tìm thấy buổi nào được xếp lịch cho tên này. Kiểm tra lại với quản trị viên.';return;}
+    setAuth({type:'guest',guestName:nm});showApp();return;
+  }
+  const pin=document.getElementById('l-pin').value;
   if(!pin){err.textContent='Vui lòng nhập mã PIN.';return;}
   if(v==='admin'){if(pin!==(D.settings?.adminPin||atob('MTIzNA=='))){err.textContent='PIN không đúng.';document.getElementById('l-pin').value='';return;}setAuth({type:'admin',teacherId:null});}
   else{const t=GT(parseInt(v));if(!t||pin!==t.pin){err.textContent='PIN không đúng.';document.getElementById('l-pin').value='';return;}setAuth({type:'teacher',teacherId:t.id});}
@@ -960,6 +1039,7 @@ function showLogin(){
   document.getElementById('app').style.display='none';
   document.getElementById('l-user').value='';
   document.getElementById('l-pw').style.display='none';
+  document.getElementById('l-guest').style.display='none';
   document.getElementById('l-pin').value='';
   document.getElementById('l-err').textContent='';
   document.getElementById('l-hint').className='l-hint';
@@ -970,13 +1050,20 @@ function showApp(){
   document.getElementById('app').style.display='flex';
   document.getElementById('s-name').textContent=D.settings?.studioName||'Palm Yoga Studio';
   setupNav();buildPicker();syncPicker();updateBadge();
-  switchTab(isTc()?'classes':'overview');
+  switchTab(isTc()?'classes':(isGuestT()?'calendar':'overview'));
 }
 function setupNav(){
-  document.querySelectorAll('.n-item').forEach(n=>{const t=n.dataset.tab;n.style.display=isTc()&&!['calendar','classes'].includes(t)?'none':'';});
+  document.querySelectorAll('.n-item').forEach(n=>{
+    const t=n.dataset.tab;
+    let show=true;
+    if(isGuestT())show=t==='calendar';
+    else if(isTc())show=['calendar','classes'].includes(t);
+    n.style.display=show?'':'none';
+  });
   document.getElementById('btn-add-sess').style.display=isAdmin()?'':'none';
+  const bac=document.getElementById('btn-add-ct');if(bac)bac.style.display=isAdmin()?'':'none';
 }
-function updateBadge(){const a=getAuth();document.getElementById('u-badge').textContent=a?.type==='admin'?'🔐 Admin':`🌿 ${GT(a?.teacherId)?.name||'GV'}`;}
+function updateBadge(){const a=getAuth();document.getElementById('u-badge').textContent=a?.type==='admin'?'🔐 Admin':a?.type==='guest'?`🔗 ${a.guestName} (Dạy thay)`:`🌿 ${GT(a?.teacherId)?.name||'GV'}`;}
 
 // MONTH PICKER
 function buildPicker(){
@@ -989,7 +1076,9 @@ function stepMo(d){viewMonth=new Date(viewMonth.getFullYear(),viewMonth.getMonth
 
 // NAV
 const TITLES={overview:'Tổng Quan',calendar:'Lịch Tập',classes:'Ca Tập',teachers:'Giáo Viên',students:'Học Viên',income:'Học Phí',expenses:'Chi Phí',settings:'Cài Đặt'};
-document.querySelectorAll('.n-item').forEach(el=>el.addEventListener('click',()=>switchTab(el.dataset.tab)));
+document.querySelectorAll('.n-item').forEach(el=>el.addEventListener('click',()=>{switchTab(el.dataset.tab);closeSidebar();}));
+function toggleSidebar(){document.querySelector('.sidebar').classList.toggle('open');document.getElementById('sidebar-overlay').classList.toggle('show');}
+function closeSidebar(){document.querySelector('.sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('show');}
 function switchTab(tab){
   currentTab=tab;
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
@@ -1037,6 +1126,12 @@ function renderCal(){
   document.getElementById('cal-lbl').textContent=`${VI_MO[mo]} ${yr}`;
   const bd={};let sess=moSess(mo,yr);
   if(isTc())sess=sess.filter(s=>s.teacherId===curTid());
+  else if(isGuestT())sess=sess.filter(s=>s.guestTeacher&&s.guestTeacher.trim().toLowerCase()===curGuestName());
+  const mcEl=document.getElementById('cal-my-count');
+  if(mcEl){
+    if(!isAdmin()){const taught=sess.filter(s=>!s.cancelled&&s.att&&s.att.length>0).length;mcEl.textContent=`✓ Bạn đã dạy ${taught} buổi tháng này`;mcEl.style.display='';}
+    else mcEl.style.display='none';
+  }
   sess.forEach(s=>{if(!bd[s.date])bd[s.date]=[];bd[s.date].push(s);});
   const f=new Date(yr,mo,1),sd=(f.getDay()+6)%7,dm=new Date(yr,mo+1,0).getDate(),pd=new Date(yr,mo,0).getDate();
   let cells='';
@@ -1059,12 +1154,12 @@ function openSess(sid){
   editSessId=sid;const ct=GC(s.ctId);
   document.getElementById('ms-ttl').textContent=`${ct?.name} — ${fd(s.date)}`;
   tempAtt={};s.att.forEach(a=>{tempAtt[a.sid]={st:a.st,mfor:a.mfor,guest:!!a.guest};});
-  const en=ct?.studentIds||[],to=D.teachers.map(t=>`<option value="${t.id}" ${!s.guestTeacher&&t.id===s.teacherId?'selected':''}>${t.name}</option>`).join('')+`<option value="guest" ${s.guestTeacher?'selected':''}>🔗 GV thuê ngoài (nhập tên)</option>`,ce=canEdit(s);
+  const en=ct?.studentIds||[],to=D.teachers.map(t=>`<option value="${t.id}" ${!s.guestTeacher&&t.id===s.teacherId?'selected':''}>${t.name}</option>`).join('')+`<option value="guest" ${s.guestTeacher?'selected':''}>🔗 GV dạy thay (nhập tên)</option>`,ce=canEdit(s);
   let bd=`<div class="fx ic g2r mb3" style="flex-wrap:wrap"><div><div class="txs tmu">Ngày</div><strong>${fd(s.date)}</strong></div><div><div class="txs tmu">Giờ</div><strong>${s.time}</strong></div><div>${s.extra?'<span class="badge b-gold">★ Buổi thêm</span>':'<span class="badge b-ok">Lịch cố định</span>'}${s.cancelled?'<span class="badge b-red" style="margin-left:4px">❌ Đã huỷ</span>':''}</div></div>`;
   if(s.cancelled){bd+=`<div class="a-warn">❌ Đã huỷ${s.cancelNote?': '+s.cancelNote:''}</div>`;}
   else{
-    if(ce)bd+=`<div class="fg"><label class="fl">Giáo viên buổi này</label><select class="fs" id="sess-tc" style="max-width:220px" onchange="togGuestTc()">${to}</select><input type="text" class="fi mt2" id="sess-guest-nm" placeholder="Nhập tên GV thuê ngoài..." style="display:${s.guestTeacher?'':'none'};max-width:220px" value="${s.guestTeacher||''}"><div id="sess-guest-amt-wrap" style="display:${s.guestTeacher?'':'none'};margin-top:6px"><label class="fl">Lương buổi này (VNĐ) — có thể khác giá gốc của ca</label><input type="text" inputmode="numeric" class="fi" id="sess-guest-amt" placeholder="VD: 250.000" oninput="fmtMoneyInput(this)" style="max-width:220px" value="${s.guestAmount?s.guestAmount.toLocaleString('vi-VN'):''}"></div></div>`;
-    else{const nm=s.guestTeacher||GT(s.teacherId)?.name||'—',col=s.guestTeacher?'var(--muted)':(GT(s.teacherId)?.color||'#999');bd+=`<div class="mb2 tsm">GV: <span class="badge" style="background:${col}18;color:${col}">${nm}${s.guestTeacher?' · thuê ngoài':''}</span></div>`;}
+    if(isAdmin())bd+=`<div class="fg"><label class="fl">Giáo viên buổi này</label><select class="fs" id="sess-tc" style="max-width:220px" onchange="togGuestTc()">${to}</select><input type="text" class="fi mt2" id="sess-guest-nm" placeholder="Nhập tên GV dạy thay..." style="display:${s.guestTeacher?'':'none'};max-width:220px" value="${s.guestTeacher||''}"><div id="sess-guest-amt-wrap" style="display:${s.guestTeacher?'':'none'};margin-top:6px"><label class="fl">Lương buổi này (VNĐ) — có thể khác giá gốc của ca</label><input type="text" inputmode="numeric" class="fi" id="sess-guest-amt" placeholder="VD: 250.000" oninput="fmtMoneyInput(this)" style="max-width:220px" value="${s.guestAmount?s.guestAmount.toLocaleString('vi-VN'):''}"></div></div>`;
+    else{const nm=s.guestTeacher||GT(s.teacherId)?.name||'—',col=s.guestTeacher?'var(--muted)':(GT(s.teacherId)?.color||'#999');bd+=`<div class="mb2 tsm">GV: <span class="badge" style="background:${col}18;color:${col}">${nm}${s.guestTeacher?' · dạy thay':''}</span></div>`;}
     bd+=`<div class="sep"></div><div class="txs fb tmu" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px">Điểm danh (học viên đăng ký ca này)</div>`;
     bd+=`<div id="att-rows">${renderRosterRows(en,ce)}</div>`;
     bd+=`<div class="sep"></div><div class="txs fb tmu" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px">🔄 Học viên ngoài danh sách (học bù / học thử)</div>`;
@@ -1144,7 +1239,7 @@ function saveAtt(){
   if(ts){
     if(ts.value==='guest'){
       const nm=(document.getElementById('sess-guest-nm')?.value||'').trim();
-      if(!nm){alert('Vui lòng nhập tên giáo viên thuê ngoài.');return;}
+      if(!nm){alert('Vui lòng nhập tên GV dạy thay.');return;}
       s.guestTeacher=nm;s.teacherId=null;
       s.guestAmount=rawMoney('sess-guest-amt')||ctSessionAmount(GC(s.ctId));
     }else{s.guestTeacher=null;s.guestAmount=null;s.teacherId=parseInt(ts.value);}
@@ -1168,6 +1263,11 @@ function setCV(v){classView=v;document.querySelectorAll('#cls-vnav .vn-item').fo
 function renderCls(){
   const mo=viewMonth.getMonth(),yr=viewMonth.getFullYear();
   const cts=isAdmin()?D.classTypes:D.classTypes.filter(c=>c.teacherId===curTid());
+  const ccEl=document.getElementById('cls-my-count');
+  if(ccEl){
+    if(!isAdmin()){const taught=Object.values(tcCntByClass(curTid(),mo,yr)).reduce((a,b)=>a+b,0);ccEl.textContent=`✓ Bạn đã dạy ${taught} buổi tháng này`;ccEl.style.display='';}
+    else ccEl.style.display='none';
+  }
   const DOW=['CN','T2','T3','T4','T5','T6','T7'];
   if(classView==='summary'){
     document.getElementById('cls-list').innerHTML=cts.map(ct=>{
@@ -1176,9 +1276,9 @@ function renderCls(){
         const st=GS(sid);if(!st)return'';let p=0,a=0,b=0;
         ms.forEach(s=>{const ar=s.att.find(x=>x.sid===sid);if(ar?.st==='present')p++;else if(ar?.st==='absent')a++;else if(ar?.st==='makeup')b++;});
         const stB=st.status!=='active'?`<span class="badge ${st.status==='paused'?'b-pause':'b-stop'} txs">${st.status==='paused'?'Tạm nghỉ':'Đã nghỉ'}</span>`:'';
-        return`<tr><td><div class="fx ic g2r">${avi(st.name,23,9)}<span style="cursor:pointer;color:var(--green);font-weight:600" onclick="openStuM(${sid})">${st.name}</span> ${stB}</div></td><td><span class="badge b-ok">✓ ${p}</span></td><td><span class="badge b-red">✗ ${a}</span></td><td><span class="badge b-bu">🔄 ${b}</span></td></tr>`;
+        return`<tr><td><div class="fx ic g2r">${avi(st.name,23,9)}<span style="cursor:pointer;color:var(--green);font-weight:600" onclick="requireAdminPin(()=>openStuM(${sid}))">${st.name}</span> ${stB}</div></td><td><span class="badge b-ok">✓ ${p}</span></td><td><span class="badge b-red">✗ ${a}</span></td><td><span class="badge b-bu">🔄 ${b}</span></td></tr>`;
       }).join('');
-      return`<div class="c-block"><div class="cb-hd"><div class="c-stripe" style="background:${ct.color}"></div><div style="flex:1"><div class="fb" style="color:${ct.color}">${ct.name}</div><div class="tsm tmu mt1">${ct.days.map(d=>DOW[d]).join(', ')} · ${ct.time} · <strong>${t?.name}</strong> · ${ct.durationHours||1.5}h · ${fv(ct.hourlyRate||0)}/giờ</div></div><div class="tsm tmu">${ms.filter(s=>!s.cancelled).length} buổi · ${(ct.studentIds||[]).length} HV</div>${isAdmin()?`<button class="btn btn-g btn-sm" style="margin-left:8px" onclick="openEditCt(${ct.id})">✏️ Sửa</button>`:''}</div><table class="tbl"><thead><tr><th>Học viên</th><th>Có mặt</th><th>Vắng</th><th>Bù</th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="tmu tsm" style="padding:12px">Chưa có học viên.</td></tr>'}</tbody></table></div>`;
+      return`<div class="c-block"><div class="cb-hd"><div class="c-stripe" style="background:${ct.color}"></div><div style="flex:1"><div class="fb" style="color:${ct.color}">${ct.name}</div><div class="tsm tmu mt1">${ct.days.map(d=>DOW[d]).join(', ')} · ${ct.time} · <strong>${t?.name}</strong> · ${ct.durationHours||1.5}h · ${isAdmin()?fv(ct.hourlyRate||0):'••••••'}/giờ</div></div><div class="tsm tmu">${ms.filter(s=>!s.cancelled).length} buổi · ${(ct.studentIds||[]).length} HV</div>${isAdmin()?`<button class="btn btn-g btn-sm" style="margin-left:8px" onclick="openEditCt(${ct.id})">✏️ Sửa</button>`:''}</div><table class="tbl"><thead><tr><th>Học viên</th><th>Có mặt</th><th>Vắng</th><th>Bù</th></tr></thead><tbody>${rows||'<tr><td colspan="4" class="tmu tsm" style="padding:12px">Chưa có học viên.</td></tr>'}</tbody></table></div>`;
     }).join('');
   }else{document.getElementById('cls-list').innerHTML=cts.map(ct=>buildMx(ct,mo,yr)).join('');}
 }
@@ -1271,7 +1371,7 @@ function renderStudents(){
     const stB=s.status!=='active'?`<span class="badge ${s.status==='paused'?'b-pause':'b-stop'} tsm">${s.status==='paused'?'🟡 Tạm nghỉ':'🔴 Đã nghỉ'}</span>`:'';
     const mtB=s.memberType==='trial'?'<span class="badge b-trial tsm">🧪 Trải nghiệm</span>':'';
     const attB=pkg&&pkg.type==='sessions'?`<div class="txs tmu mt1">📋 Điểm danh: <strong>${pkgUsed(pkg)}/${pkg.total}</strong> buổi</div>`:'';
-    return`<div class="s-row" onclick="openStuM(${s.id})">${avi(s.name,35,12)}<div style="flex:1"><div class="fs6">${s.name} ${mtB} ${stB}</div><div class="tsm tmu mt1">${s.phone}${cls?' · '+cls:''}</div>${attB}${s.statusNote?`<div class="txs tmu">📝 ${s.statusNote}</div>`:''}</div><span class="badge ${st.cls}">${st.lbl}</span><span class="tmu" style="padding-left:6px">›</span></div>`;
+    return`<div class="s-row" onclick="requireAdminPin(()=>openStuM(${s.id}))">${avi(s.name,35,12)}<div style="flex:1"><div class="fs6">${s.name} ${mtB} ${stB}</div><div class="tsm tmu mt1">${s.phone}${cls?' · '+cls:''}</div>${attB}${s.statusNote?`<div class="txs tmu">📝 ${s.statusNote}</div>`:''}</div><span class="badge ${st.cls}">${st.lbl}</span><span class="tmu" style="padding-left:6px">›</span></div>`;
   }).join(''):'<p class="tmu tsm" style="padding:13px">Không có học viên nào.</p>';
 }
 function openStuM(sid){
@@ -1307,7 +1407,13 @@ function openStuM(sid){
   const mtSel=`<div class="fx g2r mb2"><button class="st-btn st-a ${s.memberType==='trial'?'on-a':''}" onclick="setStuMemberType(${sid},'trial')">🧪 Trải nghiệm</button><button class="st-btn st-a ${s.memberType==='official'?'on-a':''}" onclick="setStuMemberType(${sid},'official')">✅ Chính thức</button></div><div class="txs tmu">Học viên chốt học → chuyển "Chính thức" rồi bấm "+ Gia hạn / Thêm gói mới" ở trên.</div>`;
   document.getElementById('mstu-ttl').textContent=s.name;
   document.getElementById('mstu-bd').innerHTML=`
-    <div class="fx g3r ic mb3">${avi(s.name,48,17)}<div><div class="fb" style="font-size:17px">${s.name} ${s.memberType==='trial'?'<span class="badge b-trial txs">🧪 Trải nghiệm</span>':''}</div><div class="tsm tmu">${s.phone}</div><div class="mt1">${clsB||'<span class="tmu tsm">Chưa đăng ký ca</span>'}</div></div></div>
+    <div class="fx g3r ic mb3">${avi(s.name,48,17)}<div style="flex:1"><div class="fx ic g2r"><div class="fb" style="font-size:17px" id="stu-name-disp">${s.name}</div>${s.memberType==='trial'?'<span class="badge b-trial txs">🧪 Trải nghiệm</span>':''}<button class="btn btn-g btn-sm" style="padding:3px 8px;font-size:11px" onclick="togEditStuInfo()">✏️ Sửa</button></div><div class="tsm tmu" id="stu-phone-disp">${s.phone}</div><div class="mt1">${clsB||'<span class="tmu tsm">Chưa đăng ký ca</span>'}</div>
+      <div id="stu-edit-wrap" style="display:none;margin-top:8px">
+        <input type="text" class="fi mb2" id="stu-edit-name" value="${s.name}" placeholder="Họ và tên">
+        <input type="text" class="fi mb2" id="stu-edit-phone" value="${s.phone}" placeholder="Số điện thoại">
+        <div class="fx g2r jb"><div class="fx g2r"><button class="btn btn-p btn-sm" onclick="saveStuInfo(${sid})">Lưu</button><button class="btn btn-g btn-sm" onclick="togEditStuInfo()">Hủy</button></div><button class="btn btn-r btn-sm" onclick="deleteStu(${sid})">🗑️ Xoá học viên</button></div>
+      </div>
+    </div></div>
     <div class="g4 mb3">
       <div class="stat" style="padding:10px 11px"><div class="s-lbl">Buổi đã học</div><div class="s-val" style="font-size:18px">${tp}</div><div class="s-sub">từ trước tới nay</div></div>
       <div class="stat" style="padding:10px 11px"><div class="s-lbl">Số gói đã mua</div><div class="s-val" style="font-size:18px">${allPkgs.length}</div></div>
@@ -1328,6 +1434,31 @@ function openStuM(sid){
 function setStuMemberType(sid,mt){
   const s=GS(sid);if(!s)return;
   s.memberType=mt;saveD();openStuM(sid);
+}
+function togEditStuInfo(){
+  const w=document.getElementById('stu-edit-wrap');if(!w)return;
+  const show=w.style.display==='none';
+  w.style.display=show?'':'none';
+  if(show)document.getElementById('stu-edit-name').focus();
+}
+function saveStuInfo(sid){
+  const s=GS(sid);if(!s)return;
+  const nm=document.getElementById('stu-edit-name').value.trim();
+  if(!nm){alert('Vui lòng nhập tên học viên.');return;}
+  s.name=nm;
+  s.phone=document.getElementById('stu-edit-phone').value.trim();
+  saveD();openStuM(sid);
+}
+function deleteStu(sid){
+  const s=GS(sid);if(!s)return;
+  if(!confirm(`Xoá vĩnh viễn học viên "${s.name}"?\n\nSẽ xoá luôn toàn bộ gói học phí và lịch sử điểm danh của họ. Không thể hoàn tác.`))return;
+  D.students=D.students.filter(x=>x.id!==sid);
+  D.packages=D.packages.filter(p=>p.studentId!==sid);
+  D.classTypes.forEach(ct=>{ct.studentIds=ct.studentIds.filter(id=>id!==sid);});
+  D.sessions.forEach(se=>{se.att=se.att.filter(a=>a.sid!==sid);});
+  saveD();
+  closeM('mo-stu');
+  renderTab(currentTab);
 }
 function selSSt(st){
   pendingStuSt=st;
@@ -1355,7 +1486,7 @@ function rInc(){
     const s=GS(pkg.studentId);if(!s)return'';const st=pkgSt(pkg),used=pkgUsed(pkg);
     let det=pkg.type==='sessions'?`<div class="tsm tmu mt1">${pkg.total} buổi · Đã dùng ${used} · Còn ${pkg.total-used}</div>${pkg.exts?.length?`<div class="txs" style="color:var(--green)">+${pkg.exts.reduce((t,e)=>t+e.added,0)} bù ca off</div>`:''}<div class="progress mt2" style="max-width:140px"><div class="pbar${pkg.total-used<=2?' red':''}" style="width:${Math.min(used/(pkg.total||1)*100,100).toFixed(0)}%"></div></div>`:`<div class="tsm tmu mt1">Gói tháng · ${fd(pkg.start)} → ${fd(pkg.end)}</div>`;
     const payB=`<span class="badge ${pkg.payStatus==='paid'?'b-pay-ok':'b-pay-wait'}" style="margin-left:4px">${pkg.payStatus==='paid'?'✅ Đã đóng phí':'🟡 Đang xử lý'}</span>`;
-    return`<div class="pkg"><div class="fx jb" style="align-items:flex-start"><div class="fx g2r ic">${avi(s.name,31,11)}<div><span class="fs6 tsm" style="cursor:pointer;color:var(--green)" onclick="openStuM(${s.id})">${s.name}</span>${det}${pkg.notes?`<div class="txs tmu">📝 ${pkg.notes}</div>`:''}</div></div><div style="text-align:right;flex-shrink:0;margin-left:10px"><div class="amount" style="font-size:15px">${fv(pkg.amount)}</div><div class="txs tmu">Đóng ${fd(pkg.paid)}</div><div class="mt1">${payB}</div><div class="mt1"><span class="badge ${st.cls}">${st.lbl}</span></div><button class="btn btn-g btn-sm mt2" onclick="openEditPkg(${pkg.id})">✏️ Sửa</button></div></div></div>`;
+    return`<div class="pkg"><div class="fx jb" style="align-items:flex-start"><div class="fx g2r ic">${avi(s.name,31,11)}<div><span class="fs6 tsm" style="cursor:pointer;color:var(--green)" onclick="requireAdminPin(()=>openStuM(${s.id}))">${s.name}</span>${det}${pkg.notes?`<div class="txs tmu">📝 ${pkg.notes}</div>`:''}</div></div><div style="text-align:right;flex-shrink:0;margin-left:10px"><div class="amount" style="font-size:15px">${fv(pkg.amount)}</div><div class="txs tmu">Đóng ${fd(pkg.paid)}</div><div class="mt1">${payB}</div><div class="mt1"><span class="badge ${st.cls}">${st.lbl}</span></div><button class="btn btn-g btn-sm mt2" onclick="openEditPkg(${pkg.id})">✏️ Sửa</button></div></div></div>`;
   }).join('');
 }
 
@@ -1426,7 +1557,7 @@ function delTc(tid){
   if(cls.length){alert(`GV ${t.name} đang phụ trách ${cls.length} ca tập. Hãy chuyển ca đó sang GV khác trước khi xoá.`);return;}
   if(!confirm(`Xoá giáo viên "${t.name}"? Không thể hoàn tác.`))return;
   D.teachers=D.teachers.filter(tc=>tc.id!==tid);
-  saveD();buildLoginDD();renderTcMgmt();
+  saveD();buildLoginDD();renderTcMgmt();rTc();
 }
 function openAddTc(){
   document.getElementById('ntc-nm').value='';
@@ -1443,7 +1574,7 @@ function saveNewTc(){
   if(!pin){alert('Vui lòng nhập mã PIN.');return;}
   const nid=Math.max(...D.teachers.map(t=>t.id),0)+1;
   D.teachers.push({id:nid,name,color,pin});
-  saveD();buildLoginDD();closeM('mo-ntc');renderTcMgmt();
+  saveD();buildLoginDD();closeM('mo-ntc');renderTcMgmt();rTc();
 }
 
 // ADD MODALS
@@ -1638,6 +1769,16 @@ function saveEditCt(){
   ct.hourlyRate=rawMoney('ect-rate');
   saveD();closeM('mo-ecte');renderTab(currentTab);
 }
+function deleteCt(){
+  const ct=GC(editCtId);if(!ct)return;
+  const n=D.sessions.filter(s=>s.ctId===ct.id).length;
+  if(!confirm(`Xoá vĩnh viễn ca tập "${ct.name}"?\n\nSẽ xoá luôn ${n} buổi tập (kể cả đã điểm danh) thuộc ca này, và gỡ ca này khỏi hồ sơ học viên đã đăng ký. Không thể hoàn tác.`))return;
+  D.classTypes=D.classTypes.filter(c=>c.id!==ct.id);
+  D.sessions=D.sessions.filter(s=>s.ctId!==ct.id);
+  D.students.forEach(s=>{s.classTypeIds=s.classTypeIds.filter(id=>id!==ct.id);});
+  D.packages.forEach(p=>{if(p.schedule)p.schedule=p.schedule.filter(sc=>sc.ctId!==ct.id);});
+  saveD();closeM('mo-ecte');renderTab(currentTab);
+}
 
 // EXPENSES (CHI PHÍ)
 function rExp(){
@@ -1657,7 +1798,7 @@ function rExp(){
     return`<div class="mb2" style="padding:6px 0;border-bottom:1px solid var(--border)"><div class="fx jb ic"><span class="fb" style="color:${t.color}">${t.name}</span><span class="fb" style="color:${t.color}">${fv(total)}</span></div><div class="txs tmu mt1">${detail}</div></div>`;
   }).join('')+Object.entries(guestSalaryDetail(mo,yr)).map(([name,g])=>{
     const detail=g.rows.map(r=>`${r.ct.name} (${r.count} buổi · ${fv(r.amount)})`).join(' · ');
-    return`<div class="mb2" style="padding:6px 0;border-bottom:1px solid var(--border)"><div class="fx jb ic"><span class="fb" style="color:var(--muted)">${name} <span class="badge b-dim txs">🔗 Thuê ngoài</span></span><span class="fb" style="color:var(--muted)">${fv(g.total)}</span></div><div class="txs tmu mt1">${detail}</div></div>`;
+    return`<div class="mb2" style="padding:6px 0;border-bottom:1px solid var(--border)"><div class="fx jb ic"><span class="fb" style="color:var(--muted)">${name} <span class="badge b-dim txs">🔗 Dạy thay</span></span><span class="fb" style="color:var(--muted)">${fv(g.total)}</span></div><div class="txs tmu mt1">${detail}</div></div>`;
   }).join('')+`<div class="fx jb ic mt2" style="padding-top:8px"><span class="fb">Tổng lương GV</span><span class="fb" style="font-size:16px;color:var(--palm-dk)">${fv(salTotal)}</span></div>`;
   document.getElementById('exp-list').innerHTML=monthExp.length?[...monthExp].sort((a,b)=>b.date.localeCompare(a.date)).map(e=>`<div class="pkg"><div class="fx jb" style="align-items:flex-start"><div><div class="fs6 tsm">${e.title}</div><div class="txs tmu mt1">${fd(e.date)} · <span class="badge b-dim txs">${e.category}</span></div>${e.notes?`<div class="txs tmu mt1">📝 ${e.notes}</div>`:''}</div><div style="text-align:right;flex-shrink:0;margin-left:10px"><div class="amount" style="font-size:15px;color:var(--red)">-${fv(e.amount)}</div><button class="btn btn-g btn-sm mt2" onclick="openEditExp(${e.id})">✏️ Sửa</button> <button class="btn btn-r btn-sm mt2" onclick="deleteExp(${e.id})">🗑️</button></div></div></div>`).join(''):'<p class="tmu tsm">Chưa có khoản chi phí nào trong tháng này.</p>';
 }
