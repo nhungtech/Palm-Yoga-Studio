@@ -354,6 +354,7 @@ table.tbl tr:hover td{background:var(--g-pl)}
 
     <!-- OVERVIEW -->
     <div id="panel-overview" class="panel active">
+      <div id="ov-bday" style="display:none"></div>
       <div class="g5 mb3" id="ov-stats"></div>
       <div class="g2 mt3">
         <div class="card"><div class="c-head"><span class="c-ttl">Buổi dạy theo GV tháng này</span></div><div class="c-body" id="ov-bars"></div></div>
@@ -1108,6 +1109,15 @@ function rOv(){
   const mo=viewMonth.getMonth(),yr=viewMonth.getFullYear();
   const ms=moSess(mo,yr),past=ms.filter(s=>s.date<=TODAY&&!s.cancelled);
   const pfx=`${yr}-${String(mo+1).padStart(2,'0')}`;
+  const todayMD=TODAY.slice(5); // 'MM-DD'
+  const bdayStu=D.students.filter(s=>s.status==='active'&&s.birthday&&s.birthday.slice(5)===todayMD);
+  const bdayEl=document.getElementById('ov-bday');
+  if(bdayEl){
+    if(bdayStu.length){
+      bdayEl.style.display='block';
+      bdayEl.innerHTML=`<div class="a-warn mb3" style="background:var(--p-lt);border-color:#E9D5D8"><span>🎂</span><span>Hôm nay là sinh nhật của: <strong>${bdayStu.map(s=>s.name).join(', ')}</strong> — gửi lời chúc mừng nhé!</span></div>`;
+    }else{bdayEl.style.display='none';bdayEl.innerHTML='';}
+  }
   const mInc=D.packages.filter(p=>p.paid?.startsWith(pfx)).reduce((s,p)=>s+(p.amount||0),0);
   const mOtherExp=D.expenses.filter(e=>e.date.startsWith(pfx)).reduce((s,e)=>s+(e.amount||0),0);
   const mExp=allTeacherSalaryTotal(mo,yr)+mOtherExp;
@@ -1214,6 +1224,8 @@ function attRowH(sid,name,att,ed,guest){
   const ok=att.st==='present',ab=att.st==='absent',bu=att.st==='makeup';
   const isTrial=guest&&GS(sid)?.memberType==='trial';
   const guestTag=guest?(isTrial?'<span class="badge b-trial" style="margin-left:4px">🧪 Học thử</span>':'<span class="badge b-bu" style="margin-left:4px">🔄 Học bù</span>'):'';
+  const hNote=GS(sid)?.healthNote;
+  const healthTag=hNote?`<span title="${hNote.replace(/"/g,'&quot;')}" style="margin-left:4px;cursor:help">⚠️</span>`:'';
   let btns='';
   if(ed){
     const opts=[['present','✓ Có','a-ok'],['absent','✗ Vắng','a-abs']];
@@ -1224,7 +1236,7 @@ function attRowH(sid,name,att,ed,guest){
     else if(bu)b=`<span class="badge b-bu">🔄 Bù${att.mfor?' (từ '+fd(att.mfor)+')':''}</span>`;
     btns=b;
   }
-  return`<div class="fx ic g2r mb2${guest?' guest-row':''}" style="flex-wrap:wrap">${avi(name,27,10)}<span class="fs6" style="flex:1;min-width:100px;font-size:12px">${name}${guestTag}</span>${btns}</div>`;
+  return`<div class="fx ic g2r mb2${guest?' guest-row':''}" style="flex-wrap:wrap">${avi(name,27,10)}<span class="fs6" style="flex:1;min-width:100px;font-size:12px">${name}${guestTag}${healthTag}</span>${btns}</div>${hNote?`<div class="txs" style="color:var(--amber);margin:-4px 0 8px 35px">⚠️ ${hNote}</div>`:''}`;
 }
 function setA(sid,st){
   if(!tempAtt[sid])tempAtt[sid]={st:null,mfor:null,guest:false};
@@ -1410,7 +1422,7 @@ function openStuM(sid){
     const pst=pkgSt(p),isCur=pkg&&p.id===pkg.id;
     const ppay=`<span class="badge ${p.payStatus==='paid'?'b-pay-ok':'b-pay-wait'} txs">${p.payStatus==='paid'?'✅ Đã đóng':'🟡 Đang xử lý'}</span>`;
     const det=p.type==='sessions'?`${p.total} buổi`:`Gói tháng · ${p.months} tháng`;
-    return`<div class="pkg" style="margin-bottom:7px;${isCur?'border-color:var(--green)':''}"><div class="fx jb" style="align-items:flex-start"><div><div class="fs6 tsm">${det}${isCur?' <span class="badge b-ok txs">Hiện tại</span>':''}</div><div class="txs tmu mt1">${fd(p.start)} → ${fd(p.end)}</div><div class="txs tmu">Đóng tiền: ${fd(p.paid)}</div>${p.notes?`<div class="txs tmu">📝 ${p.notes}</div>`:''}</div><div style="text-align:right;flex-shrink:0;margin-left:8px"><div class="amount" style="font-size:14px">${fv(p.amount)}</div><div class="mt1">${ppay}</div><div class="mt1"><span class="badge ${pst.cls} txs">${pst.lbl}</span></div><button class="btn btn-g btn-sm mt1" onclick="closeM('mo-stu');openEditPkg(${p.id})">✏️ Sửa gói</button></div></div></div>`;
+    return`<div class="pkg" style="margin-bottom:7px;${isCur?'border-color:var(--green)':''}"><div class="fx jb" style="align-items:flex-start"><div><div class="fs6 tsm">${det}${isCur?' <span class="badge b-ok txs">Hiện tại</span>':''}</div><div class="txs tmu mt1">${fd(p.start)} → ${fd(p.end)}</div><div class="txs tmu">Đóng tiền: ${fd(p.paid)}</div>${p.notes?`<div class="txs tmu">📝 ${p.notes}</div>`:''}</div><div style="text-align:right;flex-shrink:0;margin-left:8px"><div class="amount" style="font-size:14px">${fv(p.amount)}</div><div class="mt1">${ppay}</div><div class="mt1"><span class="badge ${pst.cls} txs">${pst.lbl}</span></div><div class="fx g2r mt1" style="justify-content:flex-end"><button class="btn btn-g btn-sm" onclick="closeM('mo-stu');openEditPkg(${p.id})">✏️ Sửa gói</button><button class="btn btn-g btn-sm" onclick="downloadReceipt(${p.id})">🧾 Biên nhận</button></div></div></div></div>`;
   }).join(''):'<p class="tmu tsm">Chưa từng mua gói nào.</p>';
   const stSel=`<div class="fx g2r mb2"><button class="st-btn st-a ${s.status==='active'?'on-a':''}" onclick="selSSt('active')">🟢 Đang học</button><button class="st-btn st-p ${s.status==='paused'?'on-p':''}" onclick="selSSt('paused')">🟡 Tạm nghỉ</button><button class="st-btn st-s ${s.status==='stopped'?'on-s':''}" onclick="selSSt('stopped')">🔴 Đã nghỉ</button></div><div id="st-na" style="${s.status!=='active'?'':'display:none'}"><input type="text" class="fi mb2" id="st-note" value="${s.statusNote||''}" placeholder="Ghi chú lý do..."><div class="fg"><label class="fl">Ngày dự kiến quay lại</label><input type="date" class="fi" id="st-ret" value="${s.returnDate||''}"></div></div><button class="btn btn-p btn-sm mt2" onclick="saveStuSt()">Lưu trạng thái</button>`;
   const mtSel=`<div class="fx g2r mb2"><button class="st-btn st-a ${s.memberType==='trial'?'on-a':''}" onclick="setStuMemberType(${sid},'trial')">🧪 Trải nghiệm</button><button class="st-btn st-a ${s.memberType==='official'?'on-a':''}" onclick="setStuMemberType(${sid},'official')">✅ Chính thức</button></div><div class="txs tmu">Học viên chốt học → chuyển "Chính thức" rồi bấm "+ Gia hạn / Thêm gói mới" ở trên.</div>`;
@@ -1420,9 +1432,12 @@ function openStuM(sid){
       <div id="stu-edit-wrap" style="display:none;margin-top:8px">
         <input type="text" class="fi mb2" id="stu-edit-name" value="${s.name}" placeholder="Họ và tên">
         <input type="text" class="fi mb2" id="stu-edit-phone" value="${s.phone}" placeholder="Số điện thoại">
+        <div class="fg mb2"><label class="fl">Ngày sinh (không bắt buộc)</label><input type="date" class="fi" id="stu-edit-bday" value="${s.birthday||''}"></div>
+        <div class="fg mb2"><label class="fl">Lưu ý sức khoẻ / ghi chú đặc biệt</label><textarea class="fi" id="stu-edit-health" placeholder="VD: đau lưng dưới, tránh vặn mạnh...">${s.healthNote||''}</textarea></div>
         <div class="fx g2r jb"><div class="fx g2r"><button class="btn btn-p btn-sm" onclick="saveStuInfo(${sid})">Lưu</button><button class="btn btn-g btn-sm" onclick="togEditStuInfo()">Hủy</button></div><button class="btn btn-r btn-sm" onclick="deleteStu(${sid})">🗑️ Xoá học viên</button></div>
       </div>
     </div></div>
+    ${s.healthNote?`<div class="a-warn txs" style="margin-bottom:14px"><span>⚠️</span><span><strong>Lưu ý sức khoẻ:</strong> ${s.healthNote}</span></div>`:''}
     <div class="g4 mb3">
       <div class="stat" style="padding:10px 11px"><div class="s-lbl">Buổi đã học</div><div class="s-val" style="font-size:18px">${tp}</div><div class="s-sub">từ trước tới nay</div></div>
       <div class="stat" style="padding:10px 11px"><div class="s-lbl">Số gói đã mua</div><div class="s-val" style="font-size:18px">${allPkgs.length}</div></div>
@@ -1456,6 +1471,8 @@ function saveStuInfo(sid){
   if(!nm){alert('Vui lòng nhập tên học viên.');return;}
   s.name=nm;
   s.phone=document.getElementById('stu-edit-phone').value.trim();
+  s.birthday=document.getElementById('stu-edit-bday').value||'';
+  s.healthNote=document.getElementById('stu-edit-health').value.trim();
   saveD();openStuM(sid);
 }
 function deleteStu(sid){
@@ -1468,6 +1485,63 @@ function deleteStu(sid){
   saveD();
   closeM('mo-stu');
   renderTab(currentTab);
+}
+// XUẤT BIÊN NHẬN dạng ảnh PNG — tải về máy để gửi Zalo cho học viên
+function downloadReceipt(pkgId){
+  const pkg=D.packages.find(p=>p.id===pkgId);if(!pkg)return;
+  const stu=GS(pkg.studentId);if(!stu)return;
+  const W=720,H=1000;
+  const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+  function draw(logoImg){
+    ctx.fillStyle='#FAF6F0';ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='#8CA37E';ctx.lineWidth=2;rr(18,18,W-36,H-36,16);ctx.stroke();
+    ctx.textAlign='center';
+    if(logoImg){try{ctx.drawImage(logoImg,W/2-34,50,68,68);}catch{}}
+    ctx.fillStyle='#3E4A3E';ctx.font='600 30px Georgia, "Times New Roman", serif';
+    ctx.fillText('Palm Yoga Studio',W/2,158);
+    ctx.fillStyle='#8C8A7B';ctx.font='11px Arial';
+    ctx.fillText('B O D Y   ·   B R E A T H   ·   M I N D   ·   B A L A N C E',W/2,180);
+    ctx.strokeStyle='#E8E1D3';ctx.beginPath();ctx.moveTo(70,210);ctx.lineTo(W-70,210);ctx.stroke();
+    ctx.fillStyle='#41473E';ctx.font='700 19px Arial';ctx.fillText('BIÊN NHẬN ĐÓNG HỌC PHÍ',W/2,248);
+    ctx.textAlign='left';
+    ctx.fillStyle='#8C8A7B';ctx.font='12px Arial';ctx.fillText('HỌC VIÊN',80,305);
+    ctx.fillStyle='#3E4A3E';ctx.font='700 24px Arial';ctx.fillText(stu.name,80,335);
+    const rows=[
+      ['Loại gói',pkg.type==='sessions'?`Gói theo buổi — ${pkg.total} buổi`:`Gói tháng — ${pkg.months} tháng`],
+      ['Thời hạn sử dụng',`${fd(pkg.start)}  →  ${fd(pkg.end)}`],
+      ['Ngày đóng tiền',fd(pkg.paid)],
+      ['Trạng thái',pkg.payStatus==='paid'?'✅ Đã đóng phí':'🟡 Đang xử lý'],
+    ];
+    let y=385;
+    rows.forEach(([label,val])=>{
+      ctx.fillStyle='#8C8A7B';ctx.font='12px Arial';ctx.fillText(label,80,y);
+      ctx.fillStyle='#3E4A3E';ctx.font='600 16px Arial';ctx.fillText(val,80,y+21);
+      y+=54;
+    });
+    y+=14;
+    ctx.fillStyle='#E9EFE3';rr(70,y,W-140,118,14);ctx.fill();
+    ctx.textAlign='center';
+    ctx.fillStyle='#5C6B54';ctx.font='600 12px Arial';ctx.fillText('SỐ TIỀN ĐÃ ĐÓNG',W/2,y+34);
+    ctx.fillStyle='#3E4A3E';ctx.font='700 42px Arial';ctx.fillText(fv(pkg.amount),W/2,y+82);
+    y+=160;
+    ctx.fillStyle='#8C8A7B';ctx.font='italic 13px Arial';
+    ctx.fillText('Cảm ơn bạn đã đồng hành cùng Palm Yoga Studio 🌿',W/2,y);
+    ctx.font='11px Arial';
+    ctx.fillText(`Mã biên nhận: PKG-${pkg.id}  ·  Xuất ngày ${fd(TODAY)}`,W/2,y+24);
+    const link=document.createElement('a');
+    link.download=`Bien-nhan-${stu.name.replace(/\s+/g,'-')}-${pkg.id}.png`;
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+  }
+  const existingLogo=document.querySelector('.s-ico img,.l-logo img');
+  if(existingLogo&&existingLogo.src){
+    const img=new Image();
+    img.onload=()=>draw(img);
+    img.onerror=()=>draw(null);
+    img.src=existingLogo.src;
+  }else draw(null);
 }
 function selSSt(st){
   pendingStuSt=st;
@@ -1495,7 +1569,7 @@ function rInc(){
     const s=GS(pkg.studentId);if(!s)return'';const st=pkgSt(pkg),used=pkgUsed(pkg);
     let det=pkg.type==='sessions'?`<div class="tsm tmu mt1">${pkg.total} buổi · Đã dùng ${used} · Còn ${pkg.total-used}</div>${pkg.exts?.length?`<div class="txs" style="color:var(--green)">+${pkg.exts.reduce((t,e)=>t+e.added,0)} bù ca off</div>`:''}<div class="progress mt2" style="max-width:140px"><div class="pbar${pkg.total-used<=2?' red':''}" style="width:${Math.min(used/(pkg.total||1)*100,100).toFixed(0)}%"></div></div>`:`<div class="tsm tmu mt1">Gói tháng · ${fd(pkg.start)} → ${fd(pkg.end)}</div>`;
     const payB=`<span class="badge ${pkg.payStatus==='paid'?'b-pay-ok':'b-pay-wait'}" style="margin-left:4px">${pkg.payStatus==='paid'?'✅ Đã đóng phí':'🟡 Đang xử lý'}</span>`;
-    return`<div class="pkg"><div class="fx jb" style="align-items:flex-start"><div class="fx g2r ic">${avi(s.name,31,11)}<div><span class="fs6 tsm" style="cursor:pointer;color:var(--green)" onclick="requireAdminPin(()=>openStuM(${s.id}))">${s.name}</span>${det}${pkg.notes?`<div class="txs tmu">📝 ${pkg.notes}</div>`:''}</div></div><div style="text-align:right;flex-shrink:0;margin-left:10px"><div class="amount" style="font-size:15px">${fv(pkg.amount)}</div><div class="txs tmu">Đóng ${fd(pkg.paid)}</div><div class="mt1">${payB}</div><div class="mt1"><span class="badge ${st.cls}">${st.lbl}</span></div><button class="btn btn-g btn-sm mt2" onclick="openEditPkg(${pkg.id})">✏️ Sửa gói</button></div></div></div>`;
+    return`<div class="pkg"><div class="fx jb" style="align-items:flex-start"><div class="fx g2r ic">${avi(s.name,31,11)}<div><span class="fs6 tsm" style="cursor:pointer;color:var(--green)" onclick="requireAdminPin(()=>openStuM(${s.id}))">${s.name}</span>${det}${pkg.notes?`<div class="txs tmu">📝 ${pkg.notes}</div>`:''}</div></div><div style="text-align:right;flex-shrink:0;margin-left:10px"><div class="amount" style="font-size:15px">${fv(pkg.amount)}</div><div class="txs tmu">Đóng ${fd(pkg.paid)}</div><div class="mt1">${payB}</div><div class="mt1"><span class="badge ${st.cls}">${st.lbl}</span></div><div class="fx g2r mt2" style="justify-content:flex-end"><button class="btn btn-g btn-sm" onclick="openEditPkg(${pkg.id})">✏️ Sửa gói</button><button class="btn btn-g btn-sm" onclick="downloadReceipt(${pkg.id})">🧾 Biên nhận</button></div></div></div></div>`;
   }).join('');
 }
 
