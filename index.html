@@ -1509,46 +1509,77 @@ function deleteStu(sid){
 function downloadReceipt(pkgId){
   const pkg=D.packages.find(p=>p.id===pkgId);if(!pkg)return;
   const stu=GS(pkg.studentId);if(!stu)return;
-  const W=720,H=1000;
+  const W=720,H=1080;
   const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
   const ctx=canvas.getContext('2d');
+  const WHEEL=['#F0A0AE','#F3A98A','#F0C15C','#6FB8B3','#6FA8C9','#B3A3D6'];
   function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+  function dot(x,y,r,color,alpha){ctx.globalAlpha=alpha??1;ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
+  function scallopDivider(y,cx,r,gap){
+    for(let x=70;x<W-70;x+=gap){ctx.fillStyle=WHEEL[Math.floor((x-70)/gap)%WHEEL.length];dot(x,y,r,ctx.fillStyle,.85);}
+  }
+  function pill(x,y,w,h,color,text,textColor){
+    ctx.fillStyle=color;rr(x,y,w,h,h/2);ctx.fill();
+    ctx.fillStyle=textColor;ctx.font='700 14px Arial';ctx.textAlign='center';
+    ctx.fillText(text,x+w/2,y+h/2+5);
+  }
   function draw(logoImg){
-    ctx.fillStyle='#FAF6F0';ctx.fillRect(0,0,W,H);
-    ctx.strokeStyle='#6FB8B3';ctx.lineWidth=2;rr(18,18,W-36,H-36,16);ctx.stroke();
+    // nền
+    ctx.fillStyle='#FFFDF9';ctx.fillRect(0,0,W,H);
+    // dải cầu vồng pastel trên đầu
+    const grad=ctx.createLinearGradient(0,0,W,0);
+    WHEEL.forEach((c,i)=>grad.addColorStop(i/(WHEEL.length-1),c));
+    ctx.fillStyle=grad;rr(0,0,W,14,0);ctx.fill();
+    // khung viền bo tròn kép màu mint
+    ctx.strokeStyle='#6FB8B3';ctx.lineWidth=2.5;rr(18,28,W-36,H-56,20);ctx.stroke();
+    ctx.strokeStyle='#E6F3F1';ctx.lineWidth=8;rr(26,36,W-52,H-72,16);ctx.stroke();
+    // chấm confetti trang trí góc
+    const confetti=[[52,60,6,0],[668,58,5,2],[60,H-70,5,4],[660,H-60,6,1],[92,90,4,3],[630,95,4,5],[50,H-110,4,2],[640,H-110,4,3]];
+    confetti.forEach(([x,y,r,ci])=>dot(x,y,r,WHEEL[ci%WHEEL.length],.55));
     ctx.textAlign='center';
-    if(logoImg){try{ctx.drawImage(logoImg,W/2-34,50,68,68);}catch{}}
+    if(logoImg){try{ctx.drawImage(logoImg,W/2-32,64,64,64);}catch{}}
     ctx.fillStyle='#3E4A3E';ctx.font='600 30px Georgia, "Times New Roman", serif';
-    ctx.fillText('Palm Yoga Studio',W/2,158);
+    ctx.fillText('Palm Yoga Studio',W/2,168);
     ctx.fillStyle='#8C8A7B';ctx.font='11px Arial';
-    ctx.fillText('B O D Y   ·   B R E A T H   ·   M I N D   ·   B A L A N C E',W/2,180);
-    ctx.strokeStyle='#E8E1D3';ctx.beginPath();ctx.moveTo(70,210);ctx.lineTo(W-70,210);ctx.stroke();
-    ctx.fillStyle='#41473E';ctx.font='700 19px Arial';ctx.fillText('BIÊN NHẬN ĐÓNG HỌC PHÍ',W/2,248);
+    ctx.fillText('B O D Y   ·   B R E A T H   ·   M I N D   ·   B A L A N C E',W/2,190);
+    scallopDivider(220,W/2,4,26);
+    // banner tiêu đề dạng pill màu
+    pill(W/2-160,244,320,40,'#FCEEE7','🧾  BIÊN NHẬN ĐÓNG HỌC PHÍ','#9E603F');
     ctx.textAlign='left';
-    ctx.fillStyle='#8C8A7B';ctx.font='12px Arial';ctx.fillText('HỌC VIÊN',80,305);
-    ctx.fillStyle='#3E4A3E';ctx.font='700 24px Arial';ctx.fillText(stu.name,80,335);
+    ctx.fillStyle='#8C8A7B';ctx.font='12px Arial';ctx.fillText('👤  HỌC VIÊN',80,335);
+    ctx.fillStyle='#3E4A3E';ctx.font='700 26px Georgia, serif';ctx.fillText(stu.name,80,368);
+    const infoIcons=['🧘','🗓️','💵'];
     const rows=[
       ['Loại gói',pkg.type==='sessions'?`Gói theo buổi — ${pkg.total} buổi`:`Gói tháng — ${pkg.months} tháng`],
-      ['Thời hạn sử dụng',`${fd(pkg.start)}  →  ${fd(pkg.end)}`],
+      ['Thời hạn sử dụng',`${fd(pkg.start)}   →   ${fd(pkg.end)}`],
       ['Ngày đóng tiền',fd(pkg.paid)],
-      ['Trạng thái',pkg.payStatus==='paid'?'✅ Đã đóng phí':'🟡 Đang xử lý'],
     ];
-    let y=385;
-    rows.forEach(([label,val])=>{
-      ctx.fillStyle='#8C8A7B';ctx.font='12px Arial';ctx.fillText(label,80,y);
-      ctx.fillStyle='#3E4A3E';ctx.font='600 16px Arial';ctx.fillText(val,80,y+21);
-      y+=54;
+    let y=415;
+    rows.forEach(([label,val],i)=>{
+      dot(86,y-6,4,WHEEL[i%WHEEL.length],1);
+      ctx.fillStyle='#8C8A7B';ctx.font='12px Arial';ctx.fillText(label,100,y);
+      ctx.fillStyle='#3E4A3E';ctx.font='600 17px Arial';ctx.fillText(val,100,y+23);
+      y+=56;
     });
-    y+=14;
-    ctx.fillStyle='#E6F3F1';rr(70,y,W-140,118,14);ctx.fill();
+    // pill trạng thái đóng phí
+    const paid=pkg.payStatus==='paid';
+    pill(80,y+2,168,34,paid?'#E6F3F1':'#FCF1D9',paid?'✅ Đã đóng phí':'🟡 Đang xử lý',paid?'#3E6B63':'#8A6B25');
+    y+=68;
+    // khối số tiền — gradient pastel mint→xanh dương nhẹ
+    const amtGrad=ctx.createLinearGradient(70,0,W-70,0);
+    amtGrad.addColorStop(0,'#E6F3F1');amtGrad.addColorStop(1,'#E7EFF6');
+    ctx.fillStyle=amtGrad;rr(70,y,W-140,130,18);ctx.fill();
+    ctx.strokeStyle='#FFFFFF';ctx.lineWidth=2;rr(74,y+4,W-148,122,15);ctx.stroke();
     ctx.textAlign='center';
-    ctx.fillStyle='#3E6B63';ctx.font='600 12px Arial';ctx.fillText('SỐ TIỀN ĐÃ ĐÓNG',W/2,y+34);
-    ctx.fillStyle='#3E4A3E';ctx.font='700 42px Arial';ctx.fillText(fv(pkg.amount),W/2,y+82);
-    y+=160;
-    ctx.fillStyle='#8C8A7B';ctx.font='italic 13px Arial';
-    ctx.fillText('Cảm ơn bạn đã đồng hành cùng Palm Yoga Studio 🌿',W/2,y);
-    ctx.font='11px Arial';
-    ctx.fillText(`Mã biên nhận: PKG-${pkg.id}  ·  Xuất ngày ${fd(TODAY)}`,W/2,y+24);
+    ctx.fillStyle='#3E6B63';ctx.font='700 12px Arial';ctx.fillText('✨  SỐ TIỀN ĐÃ ĐÓNG  ✨',W/2,y+36);
+    ctx.fillStyle='#2F5C56';ctx.font='700 44px Arial';ctx.fillText(fv(pkg.amount),W/2,y+88);
+    y+=178;
+    scallopDivider(y,W/2,3.5,24);
+    y+=36;
+    ctx.fillStyle='#6B5A4A';ctx.font='italic 14px Arial';
+    ctx.fillText('🌿 Cảm ơn bạn đã đồng hành cùng Palm Yoga Studio 🌿',W/2,y);
+    ctx.fillStyle='#B0A896';ctx.font='11px Arial';
+    ctx.fillText(`Mã biên nhận: PKG-${pkg.id}   ·   Xuất ngày ${fd(TODAY)}`,W/2,y+26);
     const link=document.createElement('a');
     link.download=`Bien-nhan-${stu.name.replace(/\s+/g,'-')}-${pkg.id}.png`;
     link.href=canvas.toDataURL('image/png');
