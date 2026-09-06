@@ -118,6 +118,14 @@ body{font-family:'Quicksand',-apple-system,BlinkMacSystemFont,'Segoe UI',system-
 .c-dow div{padding:7px 4px;text-align:center;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:.4px}
 .cal-body{display:grid;grid-template-columns:repeat(7,1fr)}
 .c-cell{min-height:86px;padding:5px 4px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.c-cell.wk{min-height:340px}
+.c-cell.off-pick{cursor:pointer;transition:.1s}
+.c-cell.off-pick:hover{background:var(--r-lt)}
+.c-cell.off-sel{background:var(--r-lt) !important;box-shadow:inset 0 0 0 2px var(--red)}
+#dayoff-bar{background:var(--r-lt);border:1px solid #F3C9CE;border-radius:10px;padding:10px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;color:#9E4E60}
+.cal-view-tog{display:flex;gap:2px;background:var(--g-pl);border-radius:9px;padding:3px;margin-left:14px}
+.cal-view-btn{padding:6px 14px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.cal-view-btn.active{background:var(--white);color:var(--text);box-shadow:0 1px 3px rgba(65,71,62,.12)}
 .c-cell:nth-child(7n){border-right:none}
 .c-cell.dim{background:#F8F1E6}
 .c-cell.td{background:var(--g-pl)}
@@ -233,6 +241,10 @@ table.tbl tr:hover td{background:var(--g-pl)}
 .t-big{font-size:26px;font-weight:800;margin-top:4px}
 /* PKG CARD */
 .pkg{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px;margin-bottom:8px}
+.pay-col-hd{font-size:12.5px;font-weight:700;padding:9px 14px;border-radius:10px 10px 0 0;display:flex;align-items:center;gap:6px}
+.pay-col-count{font-weight:600;opacity:.75}
+.pay-col-ok{background:var(--g-lt);color:#3E6B63}
+.pay-col-wait{background:var(--gd-lt);color:#8A6B25}
 .amount{font-size:17px;font-weight:800;color:var(--green)}
 /* CLASS BLOCK */
 .c-block{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
@@ -353,7 +365,7 @@ table.tbl tr:hover td{background:var(--g-pl)}
     <div class="n-item" data-tab="expenses"><span class="n-ico">🧾</span>Chi Phí</div>
     <div class="n-item" data-tab="settings"><span class="n-ico">⚙️</span>Cài Đặt</div>
   </nav>
-  <div class="s-foot">Nhà Bè · HCM<br>Bản cập nhật: 26/08/2026 21:40</div>
+  <div class="s-foot">Nhà Bè · HCM<br>Bản cập nhật: 06/09/2026 17:22</div>
 </aside>
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 <div class="main">
@@ -384,12 +396,18 @@ table.tbl tr:hover td{background:var(--g-pl)}
     <!-- CALENDAR -->
     <div id="panel-calendar" class="panel">
       <div class="cal-nav">
-        <button class="ico-btn" onclick="stepMo(-1)">‹</button>
+        <button class="ico-btn" onclick="calStep(-1)">‹</button>
         <h3 id="cal-lbl"></h3>
-        <button class="ico-btn" onclick="stepMo(1)">›</button>
+        <button class="ico-btn" onclick="calStep(1)">›</button>
+        <div class="cal-view-tog">
+          <button class="cal-view-btn active" data-view="week" onclick="setCalView('week')">Tuần</button>
+          <button class="cal-view-btn" data-view="month" onclick="setCalView('month')">Tháng</button>
+        </div>
         <span class="badge b-ok" id="cal-my-count" style="margin-left:auto;display:none"></span>
-        <button class="btn btn-p btn-sm" id="btn-add-sess" style="margin-left:auto" onclick="openAddSess()">+ Thêm buổi</button>
+        <button class="btn btn-g btn-sm" id="btn-dayoff" style="margin-left:auto" onclick="toggleDayOffMode()">🔒 Nghỉ lễ</button>
+        <button class="btn btn-p btn-sm" id="btn-add-sess" onclick="openAddSess()">+ Thêm buổi</button>
       </div>
+      <div id="dayoff-bar" style="display:none"></div>
       <div class="cal-grid">
         <div class="c-dow"><div>T2</div><div>T3</div><div>T4</div><div>T5</div><div>T6</div><div>T7</div><div>CN</div></div>
         <div class="cal-body" id="cal-body"></div>
@@ -438,7 +456,16 @@ table.tbl tr:hover td{background:var(--g-pl)}
     <div id="panel-income" class="panel">
       <div class="g3 mb3" id="inc-stats"></div>
       <div class="sec-hd mt4"><h3>Danh sách gói học phí</h3><button class="btn btn-p" onclick="openAddPkg(null)">+ Thêm gói</button></div>
-      <div id="pkg-list"></div>
+      <div class="g2" style="align-items:start">
+        <div>
+          <div class="pay-col-hd pay-col-ok">✅ Đã đóng phí <span id="pkg-ok-count" class="pay-col-count"></span></div>
+          <div id="pkg-list-ok"></div>
+        </div>
+        <div>
+          <div class="pay-col-hd pay-col-wait">🟡 Đang xử lý — Công nợ <span id="pkg-wait-count" class="pay-col-count"></span></div>
+          <div id="pkg-list-wait"></div>
+        </div>
+      </div>
     </div>
 
     <!-- EXPENSES -->
@@ -617,6 +644,22 @@ table.tbl tr:hover td{background:var(--g-pl)}
 </div>
 
 <!-- EDIT PACKAGE -->
+<div class="overlay" id="mo-dayoff">
+  <div class="modal" style="width:440px">
+    <div class="m-hd"><h3>🔒 Xác nhận nghỉ lễ</h3><button class="x-btn" onclick="closeM('mo-dayoff')">×</button></div>
+    <div class="m-bd">
+      <p class="tsm mb3" id="dayoff-summary"></p>
+      <div class="fg"><label class="fl">Lý do (VD: Nghỉ Tết Nguyên Đán)</label><input type="text" class="fi" id="dayoff-note" placeholder="Nghỉ lễ..."></div>
+      <div class="sep"></div>
+      <div class="fs6 mb2">Có cộng bù 1 buổi vào cuối gói cho học viên đăng ký các ca này không?</div>
+      <div class="txs tmu mb3">Không áp dụng cho học viên học bù/học thử trong buổi đó.</div>
+      <div class="fx g2r">
+        <button class="btn btn-p" style="flex:1" onclick="applyDayOff(true)">✓ Có, cộng bù</button>
+        <button class="btn btn-g" style="flex:1" onclick="applyDayOff(false)">✗ Không cộng bù</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="overlay" id="mo-pke">
   <div class="modal"><div class="m-hd"><h3>Chỉnh Sửa Gói Phí</h3><button class="x-btn" onclick="closeM('mo-pke')">×</button></div>
   <div class="m-bd">
@@ -1090,6 +1133,7 @@ function setupNav(){
     n.style.display=show?'':'none';
   });
   document.getElementById('btn-add-sess').style.display=isAdmin()?'':'none';
+  const bdo=document.getElementById('btn-dayoff');if(bdo)bdo.style.display=isAdmin()?'':'none';
   const bac=document.getElementById('btn-add-ct');if(bac)bac.style.display=isAdmin()?'':'none';
 }
 function updateBadge(){const a=getAuth();document.getElementById('u-badge').textContent=a?.type==='admin'?'🔐 Admin':a?.type==='guest'?`🔗 ${a.guestName} (Dạy thay)`:`🌿 ${GT(a?.teacherId)?.name||'GV'}`;}
@@ -1100,7 +1144,11 @@ function buildPicker(){
   document.getElementById('yr-sel').innerHTML=[2025,2026,2027].map(y=>`<option value="${y}">${y}</option>`).join('');
 }
 function syncPicker(){document.getElementById('mo-sel').value=viewMonth.getMonth();document.getElementById('yr-sel').value=viewMonth.getFullYear();}
-function upMo(){viewMonth=new Date(parseInt(document.getElementById('yr-sel').value),parseInt(document.getElementById('mo-sel').value),1);renderTab(currentTab);}
+function upMo(){
+  viewMonth=new Date(parseInt(document.getElementById('yr-sel').value),parseInt(document.getElementById('mo-sel').value),1);
+  if(calView==='week'){const d=new Date(viewMonth);const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);viewWeekStart=d;}
+  renderTab(currentTab);
+}
 function stepMo(d){viewMonth=new Date(viewMonth.getFullYear(),viewMonth.getMonth()+d,1);syncPicker();renderCal();}
 
 // NAV
@@ -1159,7 +1207,99 @@ function rOv(){
 }
 
 // CALENDAR
+let calView='week';
+let dayOffMode=false,selectedOffDays=new Set();
+function toggleDayOffMode(){
+  dayOffMode=!dayOffMode;
+  selectedOffDays.clear();
+  document.getElementById('btn-dayoff').textContent=dayOffMode?'✕ Huỷ chọn':'🔒 Nghỉ lễ';
+  document.getElementById('btn-dayoff').classList.toggle('btn-r',dayOffMode);
+  document.getElementById('dayoff-bar').style.display=dayOffMode?'flex':'none';
+  updateDayOffBar();
+  renderCal();
+}
+function toggleOffDay(ds){
+  if(!ds)return;
+  if(selectedOffDays.has(ds))selectedOffDays.delete(ds);else selectedOffDays.add(ds);
+  updateDayOffBar();
+  renderCal();
+}
+function updateDayOffBar(){
+  const bar=document.getElementById('dayoff-bar');if(!bar)return;
+  const n=selectedOffDays.size;
+  bar.innerHTML=`<span>📅 Chế độ chọn ngày nghỉ — bấm vào các ngày cần nghỉ lễ trên lịch</span><span style="margin-left:auto">Đã chọn <strong>${n}</strong> ngày</span><button class="btn btn-r btn-sm" ${n?'':'disabled'} onclick="openDayOffConfirm()">Xác nhận Off ${n} ngày</button>`;
+}
+function openDayOffConfirm(){
+  if(!selectedOffDays.size)return;
+  const dates=[...selectedOffDays].sort();
+  const cnt=dates.reduce((s,ds)=>s+D.sessions.filter(x=>x.date===ds&&!x.cancelled).length,0);
+  document.getElementById('dayoff-summary').innerHTML=`Sẽ huỷ <strong>${cnt} buổi tập</strong> trong <strong>${dates.length} ngày</strong> đã chọn:<br>${dates.map(fd).join(' · ')}`;
+  document.getElementById('dayoff-note').value='';
+  openM('mo-dayoff');
+}
+function applyDayOff(compensate){
+  const note=document.getElementById('dayoff-note').value.trim()||'Nghỉ lễ';
+  selectedOffDays.forEach(ds=>{
+    const[y,m]=ds.split('-').map(Number);
+    ensureMonthSessions(m-1,y);
+    D.sessions.filter(s=>s.date===ds&&!s.cancelled).forEach(s=>{
+      s.cancelled=true;s.cancelNote=note;
+      if(compensate){
+        const ct=GC(s.ctId);
+        (ct?.studentIds||[]).forEach(sid=>{const p=pkgForDate(sid,s.date);if(p&&p.type==='sessions'){p.total+=1;if(!p.exts)p.exts=[];p.exts.push({date:TODAY,reason:`Nghỉ lễ ${fd(s.date)}`,added:1});}});
+      }
+    });
+  });
+  saveD();closeM('mo-dayoff');
+  dayOffMode=false;selectedOffDays.clear();
+  document.getElementById('btn-dayoff').textContent='🔒 Nghỉ lễ';
+  document.getElementById('btn-dayoff').classList.remove('btn-r');
+  document.getElementById('dayoff-bar').style.display='none';
+  renderCal();
+}
+let viewWeekStart=(()=>{const d=new Date(todayD);const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return d;})();
+function setCalView(v){
+  calView=v;
+  document.querySelectorAll('.cal-view-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  renderCal();
+}
+function calStep(d){
+  if(calView==='week'){viewWeekStart=new Date(viewWeekStart.getFullYear(),viewWeekStart.getMonth(),viewWeekStart.getDate()+7*d);renderCal();}
+  else stepMo(d);
+}
 function renderCal(){
+  if(calView==='week')renderCalWeek();else renderCalMonth();
+}
+function renderCalWeek(){
+  const start=new Date(viewWeekStart),end=new Date(start.getFullYear(),start.getMonth(),start.getDate()+6);
+  document.getElementById('cal-lbl').textContent=`${String(start.getDate()).padStart(2,'0')}/${String(start.getMonth()+1).padStart(2,'0')} → ${String(end.getDate()).padStart(2,'0')}/${String(end.getMonth()+1).padStart(2,'0')}/${end.getFullYear()}`;
+  const monthKeys=new Set([[start.getFullYear(),start.getMonth()],[end.getFullYear(),end.getMonth()]].map(([y,m])=>y+'-'+m));
+  let sess=[];monthKeys.forEach(key=>{const[y,m]=key.split('-').map(Number);sess=sess.concat(moSess(m,y));});
+  if(isTc())sess=sess.filter(s=>s.teacherId===curTid());
+  else if(isGuestT())sess=sess.filter(s=>s.guestTeacher&&s.guestTeacher.trim().toLowerCase()===curGuestName());
+  const sd0=dStr(start),ed0=dStr(end);
+  const mcEl=document.getElementById('cal-my-count');
+  if(mcEl){
+    if(!isAdmin()){
+      const wk=sess.filter(s=>s.date>=sd0&&s.date<=ed0);
+      const taught=wk.filter(s=>!s.cancelled&&s.att&&s.att.length>0).length;
+      mcEl.textContent=`✓ Bạn đã dạy ${taught} buổi tuần này`;mcEl.style.display='';
+    }else mcEl.style.display='none';
+  }
+  const bd={};sess.forEach(s=>{if(!bd[s.date])bd[s.date]=[];bd[s.date].push(s);});
+  let cells='';
+  for(let i=0;i<7;i++){
+    const d=new Date(start.getFullYear(),start.getMonth(),start.getDate()+i),ds=dStr(d),it=ds===TODAY;
+    const sc=(bd[ds]||[]).sort((a,b)=>a.time.localeCompare(b.time));
+    const dn=it?`<div class="d-num"><span class="td-circle">${d.getDate()}</span></div>`:`<div class="d-num">${d.getDate()}</div>`;
+    const offCls=dayOffMode?` off-pick${selectedOffDays.has(ds)?' off-sel':''}`:'';
+    const offClick=dayOffMode?` onclick="toggleOffDay('${ds}')"`:'';
+    cells+=`<div class="c-cell wk${it?' td':''}${offCls}"${offClick}>${dn}${sc.map(s=>{const ct=GC(s.ctId);return`<span class="chip${s.extra?' extra':''}${s.cancelled?' cancelled':''}" style="background:${ct?.color}18;color:${ct?.color};border-left-color:${ct?.color}" onclick="openSess('${s.id}')">${s.time} ${ct?.name}${s.extra?'★':''}${s.cancelled?' ❌':''}</span>`;}).join('')}</div>`;
+  }
+  document.getElementById('cal-body').innerHTML=cells;
+  document.getElementById('cal-legend').innerHTML=D.classTypes.map(ct=>{const t=GT(ct.teacherId);return`<div class="leg-item"><div class="dot" style="background:${ct.color}"></div><span style="color:${ct.color}">${ct.name}</span><span class="tmu tsm">(${t?.name})</span></div>`;}).join('');
+}
+function renderCalMonth(){
   const mo=viewMonth.getMonth(),yr=viewMonth.getFullYear();
   document.getElementById('cal-lbl').textContent=`${VI_MO[mo]} ${yr}`;
   const bd={};let sess=moSess(mo,yr);
@@ -1178,7 +1318,9 @@ function renderCal(){
     const ds=`${yr}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,it=ds===TODAY;
     const sc=(bd[ds]||[]).sort((a,b)=>a.time.localeCompare(b.time));
     const dn=it?`<div class="d-num"><span class="td-circle">${d}</span></div>`:`<div class="d-num">${d}</div>`;
-    cells+=`<div class="c-cell${it?' td':''}">${dn}${sc.map(s=>{const ct=GC(s.ctId);return`<span class="chip${s.extra?' extra':''}${s.cancelled?' cancelled':''}" style="background:${ct?.color}18;color:${ct?.color};border-left-color:${ct?.color}" onclick="openSess('${s.id}')">${s.time} ${ct?.name}${s.extra?'★':''}${s.cancelled?' ❌':''}</span>`;}).join('')}</div>`;
+    const offCls=dayOffMode?` off-pick${selectedOffDays.has(ds)?' off-sel':''}`:'';
+    const offClick=dayOffMode?` onclick="toggleOffDay('${ds}')"`:'';
+    cells+=`<div class="c-cell${it?' td':''}${offCls}"${offClick}>${dn}${sc.map(s=>{const ct=GC(s.ctId);return`<span class="chip${s.extra?' extra':''}${s.cancelled?' cancelled':''}" style="background:${ct?.color}18;color:${ct?.color};border-left-color:${ct?.color}" onclick="openSess('${s.id}')">${s.time} ${ct?.name}${s.extra?'★':''}${s.cancelled?' ❌':''}</span>`;}).join('')}</div>`;
   }
   const tot=Math.ceil((sd+dm)/7)*7;
   for(let d=1;d<=tot-sd-dm;d++)cells+=`<div class="c-cell dim"><div class="d-num">${d}</div></div>`;
@@ -1189,6 +1331,7 @@ function renderCal(){
 // SESSION MODAL
 function openSess(sid){
   const s=GSE(sid);if(!s)return;
+  if(dayOffMode){toggleOffDay(s.date);return;}
   editSessId=sid;const ct=GC(s.ctId);
   document.getElementById('ms-ttl').textContent=`${ct?.name} — ${fd(s.date)}`;
   tempAtt={};s.att.forEach(a=>{tempAtt[a.sid]={st:a.st,mfor:a.mfor,guest:!!a.guest};});
@@ -1509,77 +1652,93 @@ function deleteStu(sid){
 function downloadReceipt(pkgId){
   const pkg=D.packages.find(p=>p.id===pkgId);if(!pkg)return;
   const stu=GS(pkg.studentId);if(!stu)return;
-  const W=720,H=1080;
+  const W=760,H=1060;
   const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
   const ctx=canvas.getContext('2d');
-  const WHEEL=['#F0A0AE','#F3A98A','#F0C15C','#6FB8B3','#6FA8C9','#B3A3D6'];
+  const INK='#2E3A2E',NAVY='#2A3142',SAGE='#5F8A6E',SAGE_LT='#DEE8DD',MUTED='#8C8A7B',LINE='#E4DFD3',BG='#F3EEE4';
   function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
-  function dot(x,y,r,color,alpha){ctx.globalAlpha=alpha??1;ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
-  function scallopDivider(y,cx,r,gap){
-    for(let x=70;x<W-70;x+=gap){ctx.fillStyle=WHEEL[Math.floor((x-70)/gap)%WHEEL.length];dot(x,y,r,ctx.fillStyle,.85);}
+  // Icon lá đơn giản dạng nét, khớp phong cách logo hiện có của app (không phải ảnh vẽ tay)
+  function leafIcon(x,y,size,color,lw){
+    ctx.save();ctx.translate(x,y);ctx.strokeStyle=color;ctx.lineWidth=lw||2.2;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(0,size);ctx.quadraticCurveTo(size*0.75,size*0.65,size*0.1,-size*0.05);ctx.quadraticCurveTo(-size*0.65,size*0.55,0,size);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-size*0.02,size*0.85);ctx.lineTo(size*0.05,-size*0.02);ctx.stroke();
+    ctx.restore();
   }
-  function pill(x,y,w,h,color,text,textColor){
-    ctx.fillStyle=color;rr(x,y,w,h,h/2);ctx.fill();
-    ctx.fillStyle=textColor;ctx.font='700 14px Arial';ctx.textAlign='center';
-    ctx.fillText(text,x+w/2,y+h/2+5);
+  function dowLbl(d){return['CN','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'][d];}
+  function scheduleText(){
+    if(!pkg.schedule||!pkg.schedule.length)return null;
+    const days=[...new Set(pkg.schedule.map(s=>s.day))].sort((a,b)=>(a===0?7:a)-(b===0?7:b));
+    const ct=GC(pkg.schedule[0].ctId);
+    return `${days.map(dowLbl).join(' – ')}${ct?`  |  ${ct.time}`:''}`;
   }
   function draw(logoImg){
-    // nền
-    ctx.fillStyle='#FFFDF9';ctx.fillRect(0,0,W,H);
-    // dải cầu vồng pastel trên đầu
-    const grad=ctx.createLinearGradient(0,0,W,0);
-    WHEEL.forEach((c,i)=>grad.addColorStop(i/(WHEEL.length-1),c));
-    ctx.fillStyle=grad;rr(0,0,W,14,0);ctx.fill();
-    // khung viền bo tròn kép màu mint
-    ctx.strokeStyle='#6FB8B3';ctx.lineWidth=2.5;rr(18,28,W-36,H-56,20);ctx.stroke();
-    ctx.strokeStyle='#E6F3F1';ctx.lineWidth=8;rr(26,36,W-52,H-72,16);ctx.stroke();
-    // chấm confetti trang trí góc
-    const confetti=[[52,60,6,0],[668,58,5,2],[60,H-70,5,4],[660,H-60,6,1],[92,90,4,3],[630,95,4,5],[50,H-110,4,2],[640,H-110,4,3]];
-    confetti.forEach(([x,y,r,ci])=>dot(x,y,r,WHEEL[ci%WHEEL.length],.55));
-    ctx.textAlign='center';
-    if(logoImg){try{ctx.drawImage(logoImg,W/2-32,64,64,64);}catch{}}
-    ctx.fillStyle='#3E4A3E';ctx.font='600 30px Georgia, "Times New Roman", serif';
-    ctx.fillText('Palm Yoga Studio',W/2,168);
-    ctx.fillStyle='#8C8A7B';ctx.font='11px Arial';
-    ctx.fillText('B O D Y   ·   B R E A T H   ·   M I N D   ·   B A L A N C E',W/2,190);
-    scallopDivider(220,W/2,4,26);
-    // banner tiêu đề dạng pill màu
-    pill(W/2-160,244,320,40,'#FCEEE7','🧾  BIÊN NHẬN ĐÓNG HỌC PHÍ','#9E603F');
+    ctx.fillStyle=BG;ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#FFFFFF';rr(0,0,W,H,0);ctx.fillStyle=BG;ctx.fillRect(0,0,W,H);
+    // thẻ giấy chính giữa
+    ctx.fillStyle='#FBF8F2';rr(24,24,W-48,H-48,22);ctx.fill();
+    ctx.strokeStyle=LINE;ctx.lineWidth=1;rr(24,24,W-48,H-48,22);ctx.stroke();
+    // header: logo + wordmark bên trái
+    if(logoImg){try{ctx.drawImage(logoImg,58,54,50,50);}catch{}}
     ctx.textAlign='left';
-    ctx.fillStyle='#8C8A7B';ctx.font='12px Arial';ctx.fillText('👤  HỌC VIÊN',80,335);
-    ctx.fillStyle='#3E4A3E';ctx.font='700 26px Georgia, serif';ctx.fillText(stu.name,80,368);
-    const infoIcons=['🧘','🗓️','💵'];
+    ctx.fillStyle=INK;ctx.font='700 30px Georgia, "Times New Roman", serif';
+    ctx.fillText('PALM',120,80);
+    ctx.font='600 15px Georgia, serif';ctx.fillStyle=SAGE;
+    ctx.fillText('Y O G A   S T U D I O',120,100);
+    ctx.font='10px Arial';ctx.fillStyle=MUTED;
+    ctx.fillText('M O V E   ·   B R E A T H E   ·   B E   Y O U',58,122);
+    // quote góc phải
+    ctx.textAlign='right';ctx.fillStyle='#6B6558';ctx.font='italic 15px Georgia, serif';
+    ctx.fillText('"A calmer mind',W-58,72);
+    ctx.fillText('A stronger you"',W-58,92);
+    ctx.strokeStyle=MUTED;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(W-118,106);ctx.lineTo(W-58,106);ctx.stroke();
+    // tiêu đề lớn
+    ctx.textAlign='left';
+    ctx.fillStyle=INK;ctx.font='700 40px Georgia, "Times New Roman", serif';
+    ctx.fillText('BIÊN NHẬN HỌC PHÍ',58,190);
+    ctx.font='600 13px Arial';ctx.fillStyle=SAGE;
+    ctx.fillText('P A Y M E N T   R E C E I P T',58,212);
+    ctx.strokeStyle=LINE;ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(58,236);ctx.lineTo(W-58,236);ctx.stroke();
+    // các dòng thông tin
+    const sch=scheduleText();
     const rows=[
-      ['Loại gói',pkg.type==='sessions'?`Gói theo buổi — ${pkg.total} buổi`:`Gói tháng — ${pkg.months} tháng`],
-      ['Thời hạn sử dụng',`${fd(pkg.start)}   →   ${fd(pkg.end)}`],
-      ['Ngày đóng tiền',fd(pkg.paid)],
+      ['Họ và tên học viên',"Student's name",stu.name],
+      ['Số điện thoại',"Phone number",stu.phone||'—'],
+      ['Gói tập',"Package",pkg.type==='sessions'?`Gói ${pkg.total} buổi`:`Gói tháng (${pkg.months} tháng)`],
+      ['Thời gian áp dụng',"Validity period",`${fd(pkg.start)} – ${fd(pkg.end)}`],
+      ...(sch?[['Lịch tập cố định',"Fixed schedule",sch]]:[]),
     ];
-    let y=415;
-    rows.forEach(([label,val],i)=>{
-      dot(86,y-6,4,WHEEL[i%WHEEL.length],1);
-      ctx.fillStyle='#8C8A7B';ctx.font='12px Arial';ctx.fillText(label,100,y);
-      ctx.fillStyle='#3E4A3E';ctx.font='600 17px Arial';ctx.fillText(val,100,y+23);
-      y+=56;
+    let y=280;
+    rows.forEach(([vi,en,val])=>{
+      ctx.fillStyle=INK;ctx.font='600 17px Arial';ctx.fillText(vi,58,y);
+      ctx.fillStyle='#B0AA9A';ctx.font='italic 12px Arial';ctx.fillText(en,58,y+18);
+      ctx.fillStyle=NAVY;ctx.font='600 19px Arial';ctx.fillText(val,340,y+2);
+      y+=38;
+      ctx.strokeStyle=LINE;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(58,y);ctx.lineTo(W-58,y);ctx.stroke();
+      y+=40;
     });
-    // pill trạng thái đóng phí
+    // dòng số tiền — nổi bật
+    ctx.fillStyle=INK;ctx.font='600 17px Arial';ctx.fillText('Số tiền đã thanh toán',58,y);
+    ctx.fillStyle='#B0AA9A';ctx.font='italic 12px Arial';ctx.fillText('Amount paid',58,y+18);
+    ctx.fillStyle=SAGE;ctx.font='700 26px Georgia, serif';ctx.fillText(fv(pkg.amount),340,y+8);
+    y+=54;
+    // trạng thái đóng phí — badge nhỏ
     const paid=pkg.payStatus==='paid';
-    pill(80,y+2,168,34,paid?'#E6F3F1':'#FCF1D9',paid?'✅ Đã đóng phí':'🟡 Đang xử lý',paid?'#3E6B63':'#8A6B25');
-    y+=68;
-    // khối số tiền — gradient pastel mint→xanh dương nhẹ
-    const amtGrad=ctx.createLinearGradient(70,0,W-70,0);
-    amtGrad.addColorStop(0,'#E6F3F1');amtGrad.addColorStop(1,'#E7EFF6');
-    ctx.fillStyle=amtGrad;rr(70,y,W-140,130,18);ctx.fill();
-    ctx.strokeStyle='#FFFFFF';ctx.lineWidth=2;rr(74,y+4,W-148,122,15);ctx.stroke();
-    ctx.textAlign='center';
-    ctx.fillStyle='#3E6B63';ctx.font='700 12px Arial';ctx.fillText('✨  SỐ TIỀN ĐÃ ĐÓNG  ✨',W/2,y+36);
-    ctx.fillStyle='#2F5C56';ctx.font='700 44px Arial';ctx.fillText(fv(pkg.amount),W/2,y+88);
-    y+=178;
-    scallopDivider(y,W/2,3.5,24);
-    y+=36;
-    ctx.fillStyle='#6B5A4A';ctx.font='italic 14px Arial';
-    ctx.fillText('🌿 Cảm ơn bạn đã đồng hành cùng Palm Yoga Studio 🌿',W/2,y);
-    ctx.fillStyle='#B0A896';ctx.font='11px Arial';
-    ctx.fillText(`Mã biên nhận: PKG-${pkg.id}   ·   Xuất ngày ${fd(TODAY)}`,W/2,y+26);
+    ctx.fillStyle=paid?SAGE_LT:'#FBF0D9';rr(58,y,paid?128:118,30,15);ctx.fill();
+    ctx.fillStyle=paid?'#3E6B4E':'#8A6B25';ctx.font='600 13px Arial';ctx.textAlign='center';
+    ctx.fillText(paid?'✓ Đã đóng phí':'🕐 Đang xử lý',58+(paid?64:59),y+20);
+    ctx.textAlign='left';
+    y+=64;
+    // banner cảm ơn
+    const bannerH=100;
+    ctx.fillStyle=SAGE_LT;rr(58,y,W-116,bannerH,18);ctx.fill();
+    leafIcon(112,y+bannerH/2,26,SAGE,3);
+    ctx.fillStyle=INK;ctx.font='600 17px Georgia, serif';
+    ctx.fillText('Cảm ơn bạn đã đồng hành cùng Palm Yoga!',158,y+42);
+    ctx.fillStyle='#5A6B5C';ctx.font='italic 13px Arial';
+    ctx.fillText('Chúc bạn có những buổi tập thật an yên và tràn đầy năng lượng.',158,y+66);
+    // ghi chú cuối
+    ctx.textAlign='center';ctx.fillStyle='#B0AA9A';ctx.font='11px Arial';
+    ctx.fillText(`Mã biên nhận: PKG-${pkg.id}   ·   Xuất ngày ${fd(TODAY)}`,W/2,H-46);
     const link=document.createElement('a');
     link.download=`Bien-nhan-${stu.name.replace(/\s+/g,'-')}-${pkg.id}.png`;
     link.href=canvas.toDataURL('image/png');
@@ -1615,12 +1774,18 @@ function rInc(){
   const tot=D.packages.reduce((s,p)=>s+(p.amount||0),0);
   const exp=D.students.filter(s=>s.status==='active'&&pkgSt(actPkg(s.id)).urg).length;
   document.getElementById('inc-stats').innerHTML=`<div class="stat"><div class="s-lbl">Thu tháng ${mo+1}/${yr}</div><div class="s-val" style="font-size:17px">${fv(mInc)}</div></div><div class="stat"><div class="s-lbl">Tổng thu tất cả</div><div class="s-val" style="font-size:17px">${fv(tot)}</div></div><div class="stat"><div class="s-lbl">Cần gia hạn</div><div class="s-val" style="color:${exp>0?'var(--amber)':'var(--green)'}">${exp}</div><div class="s-sub">học viên</div></div>`;
-  document.getElementById('pkg-list').innerHTML=[...D.packages].sort((a,b)=>(b.paid||'').localeCompare(a.paid||'')).map(pkg=>{
+  function pkgCard(pkg){
     const s=GS(pkg.studentId);if(!s)return'';const st=pkgSt(pkg),used=pkgUsed(pkg);
     let det=pkg.type==='sessions'?`<div class="tsm tmu mt1">${pkg.total} buổi · Đã dùng ${used} · Còn ${pkg.total-used}</div>${pkg.exts?.length?`<div class="txs" style="color:var(--green)">+${pkg.exts.reduce((t,e)=>t+e.added,0)} bù ca off</div>`:''}<div class="progress mt2" style="max-width:140px"><div class="pbar${pkg.total-used<=2?' red':''}" style="width:${Math.min(used/(pkg.total||1)*100,100).toFixed(0)}%"></div></div>`:`<div class="tsm tmu mt1">Gói tháng · ${fd(pkg.start)} → ${fd(pkg.end)}</div>`;
-    const payB=`<span class="badge ${pkg.payStatus==='paid'?'b-pay-ok':'b-pay-wait'}" style="margin-left:4px">${pkg.payStatus==='paid'?'✅ Đã đóng phí':'🟡 Đang xử lý'}</span>`;
-    return`<div class="pkg"><div class="fx jb" style="align-items:flex-start"><div class="fx g2r ic">${avi(s.name,31,11)}<div><span class="fs6 tsm" style="cursor:pointer;color:var(--green)" onclick="requireAdminPin(()=>openStuM(${s.id}))">${s.name}</span>${det}${pkg.notes?`<div class="txs tmu">📝 ${pkg.notes}</div>`:''}</div></div><div style="text-align:right;flex-shrink:0;margin-left:10px"><div class="amount" style="font-size:15px">${fv(pkg.amount)}</div><div class="txs tmu">Đóng ${fd(pkg.paid)}</div><div class="mt1">${payB}</div><div class="mt1"><span class="badge ${st.cls}">${st.lbl}</span></div><div class="fx g2r mt2" style="justify-content:flex-end"><button class="btn btn-g btn-sm" onclick="openEditPkg(${pkg.id})">✏️ Sửa gói</button><button class="btn btn-g btn-sm" onclick="downloadReceipt(${pkg.id})">🧾 Biên nhận</button></div></div></div></div>`;
-  }).join('');
+    return`<div class="pkg"><div class="fx jb" style="align-items:flex-start"><div class="fx g2r ic">${avi(s.name,31,11)}<div><span class="fs6 tsm" style="cursor:pointer;color:var(--green)" onclick="requireAdminPin(()=>openStuM(${s.id}))">${s.name}</span>${det}${pkg.notes?`<div class="txs tmu">📝 ${pkg.notes}</div>`:''}</div></div><div style="text-align:right;flex-shrink:0;margin-left:10px"><div class="amount" style="font-size:15px">${fv(pkg.amount)}</div><div class="txs tmu">Đóng ${fd(pkg.paid)}</div><div class="mt1"><span class="badge ${st.cls}">${st.lbl}</span></div><div class="fx g2r mt2" style="justify-content:flex-end"><button class="btn btn-g btn-sm" onclick="openEditPkg(${pkg.id})">✏️ Sửa gói</button><button class="btn btn-g btn-sm" onclick="downloadReceipt(${pkg.id})">🧾 Biên nhận</button></div></div></div></div>`;
+  }
+  const sorted=[...D.packages].sort((a,b)=>(b.paid||'').localeCompare(a.paid||''));
+  const okList=sorted.filter(p=>p.payStatus==='paid');
+  const waitList=sorted.filter(p=>p.payStatus!=='paid');
+  document.getElementById('pkg-ok-count').textContent=`(${okList.length})`;
+  document.getElementById('pkg-wait-count').textContent=`(${waitList.length})`;
+  document.getElementById('pkg-list-ok').innerHTML=okList.length?okList.map(pkgCard).join(''):'<p class="tmu tsm" style="padding:14px">Chưa có gói nào đã đóng phí.</p>';
+  document.getElementById('pkg-list-wait').innerHTML=waitList.length?waitList.map(pkgCard).join(''):'<p class="tmu tsm" style="padding:14px">Không có công nợ nào — tất cả đã đóng phí ✨</p>';
 }
 
 // SETTINGS
