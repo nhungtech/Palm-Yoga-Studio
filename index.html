@@ -365,7 +365,7 @@ table.tbl tr:hover td{background:var(--g-pl)}
     <div class="n-item" data-tab="expenses"><span class="n-ico">🧾</span>Chi Phí</div>
     <div class="n-item" data-tab="settings"><span class="n-ico">⚙️</span>Cài Đặt</div>
   </nav>
-  <div class="s-foot">Nhà Bè · HCM<br>Bản cập nhật: 06/09/2026 17:22</div>
+  <div class="s-foot">Nhà Bè · HCM<br>Bản cập nhật: 06/09/2026 17:41</div>
 </aside>
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 <div class="main">
@@ -1294,7 +1294,7 @@ function renderCalWeek(){
     const dn=it?`<div class="d-num"><span class="td-circle">${d.getDate()}</span></div>`:`<div class="d-num">${d.getDate()}</div>`;
     const offCls=dayOffMode?` off-pick${selectedOffDays.has(ds)?' off-sel':''}`:'';
     const offClick=dayOffMode?` onclick="toggleOffDay('${ds}')"`:'';
-    cells+=`<div class="c-cell wk${it?' td':''}${offCls}"${offClick}>${dn}${sc.map(s=>{const ct=GC(s.ctId);return`<span class="chip${s.extra?' extra':''}${s.cancelled?' cancelled':''}" style="background:${ct?.color}18;color:${ct?.color};border-left-color:${ct?.color}" onclick="openSess('${s.id}')">${s.time} ${ct?.name}${s.extra?'★':''}${s.cancelled?' ❌':''}</span>`;}).join('')}</div>`;
+    cells+=`<div class="c-cell wk${it?' td':''}${offCls}"${offClick}>${dn}${sc.map(s=>{const ct=GC(s.ctId);return`<span class="chip${s.extra?' extra':''}${s.cancelled?' cancelled':''}" style="background:${ct?.color}18;color:${ct?.color};border-left-color:${ct?.color}" onclick="event.stopPropagation();openSess('${s.id}')">${s.time} ${ct?.name}${s.extra?'★':''}${s.cancelled?' ❌':''}</span>`;}).join('')}</div>`;
   }
   document.getElementById('cal-body').innerHTML=cells;
   document.getElementById('cal-legend').innerHTML=D.classTypes.map(ct=>{const t=GT(ct.teacherId);return`<div class="leg-item"><div class="dot" style="background:${ct.color}"></div><span style="color:${ct.color}">${ct.name}</span><span class="tmu tsm">(${t?.name})</span></div>`;}).join('');
@@ -1320,7 +1320,7 @@ function renderCalMonth(){
     const dn=it?`<div class="d-num"><span class="td-circle">${d}</span></div>`:`<div class="d-num">${d}</div>`;
     const offCls=dayOffMode?` off-pick${selectedOffDays.has(ds)?' off-sel':''}`:'';
     const offClick=dayOffMode?` onclick="toggleOffDay('${ds}')"`:'';
-    cells+=`<div class="c-cell${it?' td':''}${offCls}"${offClick}>${dn}${sc.map(s=>{const ct=GC(s.ctId);return`<span class="chip${s.extra?' extra':''}${s.cancelled?' cancelled':''}" style="background:${ct?.color}18;color:${ct?.color};border-left-color:${ct?.color}" onclick="openSess('${s.id}')">${s.time} ${ct?.name}${s.extra?'★':''}${s.cancelled?' ❌':''}</span>`;}).join('')}</div>`;
+    cells+=`<div class="c-cell${it?' td':''}${offCls}"${offClick}>${dn}${sc.map(s=>{const ct=GC(s.ctId);return`<span class="chip${s.extra?' extra':''}${s.cancelled?' cancelled':''}" style="background:${ct?.color}18;color:${ct?.color};border-left-color:${ct?.color}" onclick="event.stopPropagation();openSess('${s.id}')">${s.time} ${ct?.name}${s.extra?'★':''}${s.cancelled?' ❌':''}</span>`;}).join('')}</div>`;
   }
   const tot=Math.ceil((sd+dm)/7)*7;
   for(let d=1;d<=tot-sd-dm;d++)cells+=`<div class="c-cell dim"><div class="d-num">${d}</div></div>`;
